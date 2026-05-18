@@ -1,5 +1,5 @@
 <?php
-    // any php functionality 
+    require_once "layout.php";
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -7,12 +7,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tripistry | Sign Up</title>
+    <link rel="stylesheet" href="../CSS-agency/layout.css">
     <link rel="stylesheet" href="../CSS-agency/signupAgency.css">
 </head>
 <body>
-    <header>
-        <div class="page-name">Tripistry Agency Sign up</div>
-    </header>
+    <?php renderHeader("Tripistry Agency Signup"); ?>
     <main>
         <section class="signup-card">
             <h1>Registration</h1>
@@ -41,9 +40,6 @@
             </form>
         </section>
     </main>
-    <footer>
-        <p>&copy; <?php echo date("Y"); ?> Tripistry. All rights reserved.</p>
-    </footer>
     <script src="../JS-agency/signupAgency.js"></script>
 </body>
 </html>

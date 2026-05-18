@@ -11,9 +11,10 @@
 </head>
 <body>
     <main class="hero">
+
         <section class="hero-card">
-            <h1>Tripistry</h1>
-            <h2>Travel made simple</h2>
+            <h1>Travel made simple</h1>
+            
             <p>
                 Find the perfect travel experience, explore packages from trusted agencies,
                 and start planning your next trip with confidence.
@@ -27,7 +28,11 @@
                 </a>
             </div>
         </section>
-    </main>
 
+        <section class="logo-section">
+            <img src="logo.png" alt="Tripistry logo" class="main-logo">
+        </section>
+
+    </main>
 </body>
 </html>

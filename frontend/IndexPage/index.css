@@ -6,33 +6,42 @@
     --red: #f80000;
     --text-dark: #222;
 }
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     font-family: Arial, Helvetica, sans-serif;
 }
+
 body {
     min-height: 100vh;
     background-color: var(--white);
 }
+
 .hero {
     min-height: 100vh;
     width: 100%;
+
     background-image:
         linear-gradient(
             rgba(0, 0, 0, 0.15),
             rgba(0, 0, 0, 0.25)
-        ),url("index.jpg");
+        ),
+        url("index.jpg");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
 
     display: flex;
+    flex-direction: row-reverse; 
     align-items: center;
-    justify-content: flex-end;
+    justify-content: space-between;
+    gap: 50px;
+
     padding: 60px;
 }
+
 .hero-card {
     width: 100%;
     max-width: 520px;
@@ -50,28 +59,34 @@ body {
 
     box-shadow: 0 12px 35px rgba(0, 0, 0, 0.35);
 }
+
 .hero-card h1 {
-    font-size: 78px;
+    font-size: 60px;
     line-height: 1;
     color: #f87c7c;
     margin-bottom: 10px;
 }
+
 .hero-card h2 {
+    color: #f87c7c;
     font-size: 42px;
     font-weight: normal;
     color: var(--white);
     margin-bottom: 35px;
 }
+
 .hero-card p {
     font-size: 19px;
     line-height: 1.5;
     color: var(--white);
     margin-bottom: 35px;
 }
+
 .button-group {
     display: flex;
     gap: 15px;
 }
+
 .btn {
     display: inline-block;
     padding: 13px 26px;
@@ -81,36 +96,70 @@ body {
     font-weight: bold;
     transition: 0.2s ease;
 }
+
 .traveller-btn,
 .agency-btn {
     background-color: var(--white);
     color: var(--text-dark);
 }
+
 .traveller-btn:hover,
 .agency-btn:hover {
     background-color: var(--medium-pink);
     color: var(--text-dark);
 }
+
+.logo-section {
+    flex: 1;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.main-logo {
+    width: 100%;
+    max-width: 600px;
+    height: auto;
+    object-fit: contain;
+}
+
+
 @media screen and (max-width: 750px) {
     .hero {
         padding: 25px;
         justify-content: center;
+        flex-direction: column;
     }
+
     .hero-card {
         max-width: 100%;
         min-height: auto;
         padding: 40px 30px;
         text-align: center;
+        order: 2;
     }
+
+    .logo-section {
+        justify-content: center;
+        order: 1;
+    }
+
+    .main-logo {
+        max-width: 300px;
+    }
+
     .hero-card h1 {
         font-size: 54px;
     }
+
     .hero-card h2 {
         font-size: 30px;
     }
+
     .button-group {
         flex-direction: column;
     }
+
     .btn {
         width: 100%;
     }
