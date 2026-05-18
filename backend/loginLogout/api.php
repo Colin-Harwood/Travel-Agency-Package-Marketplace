@@ -629,7 +629,7 @@
                 "status" => "error",
                 "errorCode" => 500,
                 "timestamp" => time(),
-                "message" => $e->getMessage(),
+                "message" => "error occured during insertion rollback executed",
                 "data" => null
             ]);
 
@@ -640,7 +640,7 @@
             "status" => "error",
             "errorCode" => 500,
             "timestamp" => time(),
-            "message" => "Database connection failed",
+            "message" => $e->getMessage(),
             "data" => null
         ]);
     }
