@@ -98,7 +98,20 @@ class Database {
                 (SELECT JSON_ARRAYAGG(JSON_OBJECT('name', attr.name, 'entryFee', attr.entryFee)) 
                 FROM PACKAGE_ATTRACTION pat 
                 JOIN ATTRACTION attr ON pat.destinationID = attr.destinationID AND pat.name = attr.name 
-                WHERE pat.packageID = p.packageID) AS attractions
+                WHERE pat.packageID = p.packageID) AS attractions,
+
+                COALESCE(
+                    (SELECT JSON_ARRAYAGG(JSON_OBJECT(
+                        'tripID', gt.tripID, 
+                        'tripDate', gt.tripDate, 
+                        'maxSize', gt.maxSize, 
+                        'currentSize', gt.currentSize,
+                        'spotsRemaining', CAST((gt.maxSize - gt.currentSize) AS SIGNED)
+                    )) 
+                    FROM GROUP_TRIP gt 
+                    WHERE gt.packageID = p.packageID AND gt.tripDate >= CURDATE()), 
+                    '[]'
+                ) AS upcomingGroupTrips
 
             FROM PACKAGE p
             JOIN DESTINATION d ON p.destinationID = d.destinationID
@@ -124,7 +137,7 @@ class Database {
 
             // decode json
             // agg gives json strings
-            $jsonColumns = ['agencyDetails', 'reviews', 'flights', 'accommodations', 'restaurants', 'attractions'];
+            $jsonColumns = ['agencyDetails', 'reviews', 'flights', 'accommodations', 'restaurants', 'attractions', 'upcomingGroupTrips'];
             foreach ($jsonColumns as $col) {
                 if (isset($package[$col])) {
                     $package[$col] = json_decode($package[$col], true);
