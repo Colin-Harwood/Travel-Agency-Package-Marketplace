@@ -68,6 +68,7 @@ main {
     flex-direction: column;
     gap: 16px;
 }
+.signup-card input[type="tel"],
 .signup-card input[type="text"],
 .signup-card input[type="email"],
 .signup-card input[type="password"] {
