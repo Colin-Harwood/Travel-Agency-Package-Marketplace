@@ -29,7 +29,7 @@
   "data": null
 }
 
------ AGENCY LOGIN
+----- AGENCY REGISTER
 {
   "type": "agencyRegister",
   "email": "agencyName@gmail.com",
@@ -65,4 +65,4 @@
   "data": null
 }
 
-
+------- 
