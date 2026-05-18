@@ -1,0 +1,131 @@
+:root {
+    --white: #f8f8f8;
+    --light-pink: #f8baba;
+    --medium-pink: #f87c7c;
+    --dark-pink: #f83e3e;
+    --red: #f80000;
+    --text-dark: #222;
+}
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+body {
+    min-height: 100vh;
+    background-color: var(--white);
+    color: var(--text-dark);
+    display: flex;
+    flex-direction: column;
+}
+header {
+    width: 100%;
+    padding: 25px 60px;
+    background-color: var(--dark-pink);
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+.page-name {
+    font-size: 32px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-align: center;
+}
+main {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 50px 20px;
+}
+.signup-card {
+    width: 100%;
+    max-width: 390px;
+    background-color: white;
+    padding: 35px 30px;
+    border-radius: 8px;
+    box-shadow: 0 8px 25px rgba(248, 62, 62, 0.25);
+}
+.signup-card h1 {
+    font-size: 24px;
+    color: var(--text-dark);
+    margin-bottom: 25px;
+    position: relative;
+}
+.signup-card h1::after {
+    content: "";
+    width: 45px;
+    height: 3px;
+    background-color: var(--dark-pink);
+    position: absolute;
+    left: 0;
+    bottom: -6px;
+    border-radius: 5px;
+}
+.signup-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.signup-card input[type="text"],
+.signup-card input[type="email"],
+.signup-card input[type="password"] {
+    width: 100%;
+    padding: 14px 15px;
+    border: 1px solid var(--light-pink);
+    border-radius: 5px;
+    font-size: 15px;
+    outline: none;
+}
+.signup-card input:focus {
+    border-color: var(--dark-pink);
+    box-shadow: 0 0 5px rgba(248, 62, 62, 0.25);
+}
+.terms {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #555;
+}
+.terms input {
+    accent-color: var(--dark-pink);
+}
+button {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 5px;
+    background-color: var(--dark-pink);
+    color: white;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+button:hover {
+    background-color: var(--light-pink);
+}
+.login-text {
+    text-align: center;
+    font-size: 13px;
+    margin-top: 5px;
+    color: #444;
+}
+.login-text a {
+    color: var(--dark-pink);
+    text-decoration: none;
+    font-weight: bold;
+}
+.login-text a:hover {
+    text-decoration: underline;
+}
+footer {
+    width: 100%;
+    padding: 18px;
+    text-align: center;
+    background-color: var(--dark-pink);
+    color: white;
+    font-size: 14px;
+}
