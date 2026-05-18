@@ -13,19 +13,13 @@ Request:
 }
 Response:
 {
-"action": "create_package",
-  "agencyID": 1,
-  "packageType": "Adventure",
-  "name": "Cape Town Explorer",
-  "description": "7-day guided trip",
-  "pricePerPerson": 12999.99,
-  "status": "Draft",
-  "duration": 7,
-  "destinationID": 3
-
+  "status": "success",
+  "timestamp": 1779150000,
+  "data": {
+    "message": "Package created successfully.",
+    "packageID": 12
+  }
 }
-}
-
 Get Agency Packages
 Request:
 {
