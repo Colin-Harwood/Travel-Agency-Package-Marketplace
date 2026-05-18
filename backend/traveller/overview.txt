@@ -101,3 +101,41 @@ ARRAYS:reviews, flights, accomodations, restaurants, accomodations, upcomingGrou
         ]
     }
 }
+
+
+
+## bookPackage
+
+#Query
+{
+    "type": "bookPackage",
+    "apikey": "nQkleaCMsoTSDR7YOQ7BIP60ektVKshSS8GFfcBuqf91K8/R",
+    "groupTripID": "1",
+    "numTravellers": "2"
+}
+
+#Response
+{
+    "status": "success",
+    "timestamp": 1779128155,
+    "data": "Booking successfully created."
+}
+
+
+## cancelBooking
+
+#Query
+
+{
+    "type": "cancelBooking",
+    "apikey": "nQkleaCMsoTSDR7YOQ7BIP60ektVKshSS8GFfcBuqf91K8/R",
+    "orderId": "51"
+}
+
+#Response
+
+{
+    "status": "success",
+    "timestamp": 1779131903,
+    "data": "Booking successfully cancelled and spots freed up"
+}

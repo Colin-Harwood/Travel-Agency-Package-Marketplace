@@ -50,6 +50,12 @@ class Database {
             $this->getAllPackages($request_data);
         } elseif ($request_data->type === "getPackage") {
             $this->getPackage($request_data);
+        } elseif ($request_data->type === "bookPackage") {
+            $this->bookPackage($request_data);
+        } elseif ($request_data->type === "cancelBooking") {
+            $this->cancelBooking($request_data);
+        } else {
+            $this->sendResponse("error", "Invalid request type", 400);
         }
     }
 
@@ -152,7 +158,180 @@ class Database {
         }
     }
 
+    function bookPackage($data) {
+        // ensure both needed fields exist
+        if (!isset($data->groupTripID) || !isset($data->numTravellers)) {
+            $this->sendresponse("error", "Missing groupTripID or numTravellers field in bookPackage request");
+            return;
+        }
 
+        $groupTripID = (int)$data->groupTripID;
+        $numTravellers = (int)$data->numTravellers;
+        $apiKey = $data->apikey;
+
+        // ensure nothing is messed up
+        if ($numTravellers < 0) {
+            $this->sendresponse("error", "Number of travellers must be greater than zero");
+            return;
+        }
+
+        try {
+            // get user details
+            $stmt = $this->conn->prepare("SELECT userID, userType FROM USER WHERE apiKey = ?");
+            $stmt->bind_param("s", $apiKey);
+            $stmt->execute();
+            $userResult = $stmt->get_result();
+
+            // make sure user is traveller
+            $user = $userResult->fetch_assoc();
+            if ($user['userType'] !== 'Traveller') {
+                $this->sendresponse("error", "Only Travellers can book packages.");
+                return;
+            }
+            $userID = $user['userID'];
+            $stmt->close();
+
+            // fetch the trip and package details
+            $tripQuery = "
+                SELECT gt.packageID, gt.tripDate, gt.currentSize, gt.maxSize, p.pricePerPerson 
+                FROM GROUP_TRIP gt
+                JOIN PACKAGE p ON gt.packageID = p.packageID
+                WHERE gt.tripID = ? AND p.status = 'Active'
+            ";
+            $stmt = $this->conn->prepare($tripQuery);
+            $stmt->bind_param("i", $groupTripID);
+            $stmt->execute();
+            $tripResult = $stmt->get_result();
+
+            // make sure that the trip exists
+            if ($tripResult->num_rows === 0) {
+                $this->sendresponse("error", "Trip not found or package is inactive.");
+                return;
+            }
+
+            $trip = $tripResult->fetch_assoc();
+            $stmt->close();
+
+            // make sure theres still spots left
+            if (($trip['currentSize'] + $numTravellers) > $trip['maxSize']) {
+                $this->sendresponse("error", "Not enough available spots on this trip.");
+                return;
+            }
+
+            // calculate total price
+            $totalPrice = $trip['pricePerPerson'] * $numTravellers;
+            $packageID = $trip['packageID'];
+            $tripDate = $trip['tripDate'];
+
+            // execute transaction
+            $this->conn->begin_transaction();
+
+            // insert the order
+            $orderQuery = "INSERT INTO `ORDER` (startDate, numTravellers, status, totalPrice, userID, packageID) 
+                        VALUES (?, ?, 'Pending', ?, ?, ?)";
+            $stmtOrder = $this->conn->prepare($orderQuery);
+            $stmtOrder->bind_param("sidii", $tripDate, $numTravellers, $totalPrice, $userID, $packageID);
+            $stmtOrder->execute();
+            $stmtOrder->close();
+
+            // add traveller to group roster
+            $rosterQuery = "INSERT INTO TRAVELLER_GROUP_TRIP (userID, tripID, joinDate) VALUES (?, ?, CURDATE())";
+            $stmtRoster = $this->conn->prepare($rosterQuery);
+            $stmtRoster->bind_param("ii", $userID, $groupTripID);
+            $stmtRoster->execute();
+            $stmtRoster->close();
+
+            // update group size
+            $updateTripQuery = "UPDATE GROUP_TRIP SET currentSize = currentSize + ? WHERE tripID = ?";
+            $stmtUpdate = $this->conn->prepare($updateTripQuery);
+            $stmtUpdate->bind_param("ii", $numTravellers, $groupTripID);
+            $stmtUpdate->execute();
+            $stmtUpdate->close();
+
+            // if transactions good commit everything
+            $this->conn->commit();
+
+            $this->sendresponse("success", "Booking successfully created.", 200);
+
+        } catch (Exception $e) {
+            // fails then rollback whole transaction
+            $this->conn->rollback();
+            $this->sendresponse("error", "Booking failed due to a server error: " . $e->getMessage(), 400);
+        }
+    }
+
+    public function cancelBooking($data) {
+        // make sure the orderId is sent
+        if (!isset($data->orderId)) {
+            return $this->sendResponse("error", "Missing required cancellation details", 400);
+        }
+
+        $stmt = $this->conn->prepare("SELECT * from user where apiKey = ?");
+        $stmt->bind_param("s", $data->apikey);
+        $stmtFetch = $stmt->execute();
+        $userRes = $stmt->get_result();
+        $userInfo = $userRes->fetch_assoc();
+
+        try {
+            // START TRANSACTION
+            $this->conn->begin_transaction();
+
+            // fetch the order details
+            // lock with the for update
+            $sqlFetch = "
+                SELECT o.numTravellers, o.status, gt.tripID 
+                FROM `ORDER` o
+                JOIN GROUP_TRIP gt ON o.packageID = gt.packageID AND o.startDate = gt.tripDate
+                WHERE o.orderID = ? AND o.userID = ?
+                FOR UPDATE
+            ";
+            $stmtFetch = $this->conn->prepare($sqlFetch);
+            $stmtFetch->bind_param("ii", $data->orderId, $userInfo["userID"]);
+            $stmtFetch->execute();
+            $result = $stmtFetch->get_result();
+            $order = $result->fetch_assoc();
+
+            // make sure order was found and no double cancel
+            if (!$order) {
+                throw new Exception("Order not found or you do not have permission to cancel it.");
+            }
+            if ($order['status'] === 'Cancelled') {
+                throw new Exception("This booking is already cancelled.");
+            }
+
+            // change order to cancelled
+            $sqlUpdateOrder = "UPDATE `ORDER` SET status = 'Cancelled' WHERE orderID = ?";
+            $stmtUpdateOrder = $this->conn->prepare($sqlUpdateOrder);
+            $stmtUpdateOrder->bind_param("i", $data->orderId);
+            $stmtUpdateOrder->execute();
+
+            // remove traveller from the trip
+            $sqlDeleteRoster = "DELETE FROM TRAVELLER_GROUP_TRIP WHERE userID = ? AND tripID = ?";
+            $stmtDeleteRoster = $this->conn->prepare($sqlDeleteRoster);
+            $stmtDeleteRoster->bind_param("ii", $userInfo["userID"], $order['tripID']);
+            $stmtDeleteRoster->execute();
+
+            // lower the trip capacity, just make sure doesnt go below 0
+            // greater to not screw up
+            $sqlUpdateCapacity = "UPDATE GROUP_TRIP 
+                                  SET currentSize = GREATEST(0, currentSize - ?) 
+                                  WHERE tripID = ?";
+            $stmtCapacity = $this->conn->prepare($sqlUpdateCapacity);
+            $stmtCapacity->bind_param("ii", $order['numTravellers'], $order['tripID']);
+            $stmtCapacity->execute();
+
+            // commit the transaction
+            $this->conn->commit();
+            return $this->sendResponse("success", "Booking successfully cancelled and spots freed up", 200);
+
+        } catch (Exception $e) {
+            // rollback transaction if mess up
+            $this->conn->rollback();
+            
+            error_log("Cancellation Transaction Failed: " . $e->getMessage());
+            return $this->sendResponse("error", $e->getMessage(), 400);
+        }
+    }
 
     private function sendResponse($status, $data, $http_code = 200) {
         http_response_code($http_code);
