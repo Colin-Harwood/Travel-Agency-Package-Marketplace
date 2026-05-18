@@ -1,13 +1,14 @@
 OVERVIEW
-Database Engine
-RDBMS: MariaDB
+Database Engine MariaDB
 Character Set: utf8mb4
 Collation: utf8mb4_unicode_ci
-Reserved word note: The table ORDER must always be wrapped in backticks in SQL queries: `ORDER`
+QUICK note: The table ORDER must always be wrapped in backticks in SQL queries: `ORDER`
 
 USER specialisation
-All users are stored in a central USER table. Every user, regardless of type, has a record here. 
-The USER table is specialzed into TRAVELLER and TRAVEL_AGENCY. 
+All users are stored in a central USER table. Every user has a record here. 
+The USER table is specialised into two subtypes via a disjoint total specialisation: TRAVELLER and TRAVEL_AGENCY. 
+Both subtypes use userID as both their primary key and a foreign key referencing USER(userID). 
+The userType field in USER is strictly for simplicity in userType checking
 
 USER
 userID INT AUTO_INCREMENT PK
@@ -16,20 +17,129 @@ middleName VARCHAR(50) nullable
 lastName VARCHAR(50) NOT NULL
 emailAddress VARCHAR(100) NOT NULL UNIQUE
 phoneNumber VARCHAR(20) NOT NULL
-password VARCHAR(255) NOT NULL — stored as a hex string representing a hashed password
-salt VARCHAR(255) NOT NULL — hex string salt used during password hashing
-apiKey VARCHAR(255) NOT NULL — random alphanumeric string for API authentication
+password VARCHAR(255) NOT NULL 
+salt VARCHAR(255) NOT NULL
+apiKey VARCHAR(255) NOT NULL
+userType ENUM('Traveller', 'Agency') NOT NULL
 
 TRAVELLER
-userID INT PK, FK → USER(userID) ON DELETE CASCADE
-paymentID VARCHAR(100) nullable — reference to an external payment provider token
+userID INT PK, FK -> USER(userID) ON DELETE CASCADE
+paymentID VARCHAR(100) nullable 
 
 TRAVEL_AGENCY
-userID INT PK, FK → USER(userID) ON DELETE CASCADE
+userID INT PK, FK -> USER(userID) ON DELETE CASCADE
 name VARCHAR(100) NOT NULL
 street VARCHAR(100)
 suburb VARCHAR(100)
 city VARCHAR(100)
 country VARCHAR(100)
 
-To get the full profile of a traveller, join USER and TRAVELLER on userID. To get the full profile of an agency, join USER and TRAVEL_AGENCY on userID.
+to see a traveller in its entirerty join USER and TRAVELLER on userID,
+same story with AGENCY
+
+
+DESTINATION
+destinationID INT AUTO_INCREMENT PK
+country VARCHAR(100) NOT NULL
+city VARCHAR(100) NOT NULL
+description TEXT
+
+PACKAGE
+packageID INT AUTO_INCREMENT PK
+type ENUM('Adventure','Cultural','Beach','City','Safari','Ski','Cruise','Wellness') NOT NULL
+name VARCHAR(150) NOT NULL
+description TEXT
+pricePerPerson DECIMAL(10,2) NOT NULL CHECK > 0
+status ENUM('Active','Inactive','Draft') NOT NULL DEFAULT 'Draft'
+duration INT NOT NULL CHECK > 0 — number of days
+destinationID INT NOT NULL FK -> DESTINATION(destinationID)
+agencyID INT NOT NULL FK -> TRAVEL_AGENCY(userID)
+
+FLIGHT
+flightID INT AUTO_INCREMENT PK
+airline VARCHAR(100) NOT NULL
+flightNumber VARCHAR(20) NOT NULL
+departureAirport VARCHAR(100) NOT NULL
+arrivalAirport VARCHAR(100) NOT NULL
+departureTime DATETIME NOT NULL
+arrivalTime DATETIME NOT NULL
+price DECIMAL(10,2) NOT NULL CHECK > 0
+
+ACCOMMODATION
+accommodationID INT AUTO_INCREMENT PK
+name VARCHAR(150) NOT NULL
+type ENUM('Hotel','Hostel','Resort','Apartment','Villa','Guesthouse') NOT NULL
+rating DECIMAL(2,1) CHECK BETWEEN 0 AND 5 — nullable
+pricePerNight DECIMAL(10,2) NOT NULL CHECK > 0
+destinationID INT NOT NULL FK → DESTINATION(destinationID)
+
+ATTRACTION
+name VARCHAR(150)
+entryFee DECIMAL(10,2) DEFAULT 0.00
+description TEXT
+destinationID INT NOT NULL PK + FK -> DESTINATION(destinationID)
+PRIMARY KEY: (destinationID, name)
+
+must be quoted as `ORDER` in all SQL
+ORDER 
+orderID INT AUTO_INCREMENT PK
+startDate DATE NOT NULL
+numTravellers INT NOT NULL CHECK > 0
+status ENUM('Pending','Confirmed','Cancelled','Completed') NOT NULL DEFAULT 'Pending'
+totalPrice DECIMAL(10,2) NOT NULL CHECK > 0
+userID INT NOT NULL FK -> TRAVELLER(userID)
+packageID INT NOT NULL FK -> PACKAGE(packageID)
+
+
+NOTE: agencyID IS A PLAIN ATTRIBUTE
+
+REVIEW
+reviewID INT AUTO_INCREMENT PK
+comment TEXT nullable
+starRating TINYINT NOT NULL CHECK BETWEEN 1 AND 5
+reviewDate DATE NOT NULL
+userID INT NOT NULL FK -> TRAVELLER(userID)
+packageID INT NOT NULL FK -> PACKAGE(packageID)
+agencyID INT nullable — plain attribute, not a FK constraint
+
+
+GROUP_TRIP
+tripID INT AUTO_INCREMENT PK
+maxSize INT NOT NULL CHECK > 0
+tripDate DATE NOT NULL
+currentSize INT NOT NULL DEFAULT 0 CHECK >= 0
+packageID INT NOT NULL FK -> PACKAGE(packageID)
+agencyID INT NOT NULL FK -> TRAVEL_AGENCY(userID)
+
+
+TRAVELLER_GROUP_TRIP
+userID INT PK, FK -> TRAVELLER(userID)
+tripID INT PK, FK -> GROUP_TRIP(tripID)
+
+
+joinDate DATE NOT NULL
+PRIMARY KEY: (userID, tripID)
+PACKAGE_FLIGHT
+packageID INT PK, FK -> PACKAGE(packageID)
+flightID INT PK, FK -> FLIGHT(flightID)
+PRIMARY KEY: (packageID, flightID)
+
+
+PACKAGE_ACCOMMODATION
+packageID INT PK, FK -> PACKAGE(packageID)
+accommodationID INT PK, FK -> ACCOMMODATION(accommodationID)
+PRIMARY KEY: (packageID, accommodationID)
+
+
+PACKAGE_RESTAURANT
+packageID INT PK, FK -> PACKAGE(packageID)
+restaurantID INT PK, FK -> RESTAURANT(restaurantID)
+PRIMARY KEY: (packageID, restaurantID)
+
+
+PACKAGE_ATTRACTION
+packageID INT PK, FK -> PACKAGE(packageID)
+destinationID INT PK
+name VARCHAR(150) PK
+FK: (destinationID, name) -> ATTRACTION(destinationID, name)
+PRIMARY KEY: (packageID, destinationID, name)
