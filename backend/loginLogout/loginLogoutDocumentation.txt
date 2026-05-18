@@ -1,4 +1,4 @@
------- TRAVELLER REGISTER
+------ TRAVELLER REGISTER ------
 {
   "type": "travellerRegister",
   "email": "yourMom@gmail.com",
@@ -29,7 +29,7 @@
   "data": null
 }
 
------ AGENCY REGISTER
+----- AGENCY REGISTER -------
 {
   "type": "agencyRegister",
   "email": "agencyName@gmail.com",
@@ -65,4 +65,62 @@
   "data": null
 }
 
-------- 
+------- TRAVELLER login ------
+{
+    "type": "travellerLogin",
+    "email": "yourMom@gmail.com",
+    "password": "unhashedpassword"
+}
+
+-----SUCCESS
+{
+    "status" : "success",
+    "timestamp": 12345645678,
+    "data": {
+        "userID": 15,
+        "userType": "Traveller",
+        "apiKey": "4353y7r22jwvbhvbyrwyg31t28728r9247r627"
+    }
+}
+
+----- FAILURE 
+{
+    "status": "error",
+    "errorCode": 401,
+    "timestamp": 123456787654,
+    "message": "Invalid email or password",
+    "data": null
+}
+
+------ AGENCY LOGIN -------
+{
+    "type": "agencyLogin",
+    "email": "agencyName@gmail.com",
+    "password": "unhashedpassword"
+}
+
+------ SUCCESS
+{
+    "status": "success",
+    "timestamp": 12345645678,
+    "data": {
+        "userID": 15,
+        "userType": "Agency",
+        "apiKey": "4353y7r22jwvbhvbyrwyg31t28728r9247r627"
+    }
+}
+
+-----FAILURE 
+{
+    "status": "error",
+    "errorCode": 401,
+    "timestamp": 123456787654,
+    "message": "Invalid email or password",
+    "data": null
+}
+
+----- TRAVELLER & AGENCY (SHARED) LOGOUT ------------
+{
+  "type": "logout",
+  "apiKey": "4353y7r22jwvbhvbyrwyg31t28728r9247r627"
+}
