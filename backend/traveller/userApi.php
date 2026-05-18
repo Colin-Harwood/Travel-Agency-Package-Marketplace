@@ -152,6 +152,14 @@ class Database {
         }
     }
 
+    function bookPackage($data) {
+        if (!isset($data->groupTripID) || !isset($data->numTravellers)) {
+            $this->sendresponse("error", "Missing groupTripID or numTravel field in bookPackage");
+        }
+
+        
+    }
+
 
 
     private function sendResponse($status, $data, $http_code = 200) {
