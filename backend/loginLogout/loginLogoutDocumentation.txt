@@ -1,11 +1,11 @@
------- TRAVELLER LOGIN
+------ TRAVELLER REGISTER
 {
   "type": "travellerRegister",
   "email": "yourMom@gmail.com",
   "firstName": "Kai",
   "middleName": "ehren",
   "lastName": "Fynn",
-  "phoneNumber": "+27821112510",
+  "phoneNumber": "0821112510",
   "password": "unhashedpassword"
 }
 
@@ -41,7 +41,7 @@
   "suburb": "sunningHill",
   "city": "Pretoria",
   "country": "South Africa",
-  "phoneNumber": "+27824532510",
+  "phoneNumber": "0824532510",
   "password": "unhashedpassword"
 }
 
@@ -64,3 +64,5 @@
   "message": "Email already exists",
   "data": null
 }
+
+
