@@ -31,7 +31,7 @@
             <button type="submit">Register Now</button>
             <p class="login-text">
                 Already have an account?
-                <a href="#">Login now</a>
+                <a href="loginAgency.php">Login now</a>
             </p>
         </form>
     </main>
