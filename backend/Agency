@@ -59,4 +59,238 @@ response{
 }
 
 
+Update Package
+Request
+{
+  "action": "update_package",
+  "packageID": 1,
+  "packageType": "Adventure",
+  "name": "Cape Town Explorer Deluxe",
+  "description": "Updated itinerary with extra activities.",
+  "pricePerPerson": 14999.99,
+  "status": "Active",
+  "duration": 8,
+  "destinationID": 3
+}
+Success Response
+{
+  "status": "success",
+  "timestamp": 1779150000,
+  "data": {
+    "message": "Package updated successfully."
+  }
+}
+Error Response
+{
+  "status": "error",
+  "timestamp": 1779150000,
+  "data": "Invalid packageID."
+}
+2. Delete Package
+Request
+{
+  "action": "delete_package",
+  "packageID": 1
+}
+Success Response
+{
+  "status": "success",
+  "timestamp": 1779150000,
+  "data": {
+    "message": "Package deleted successfully."
+  }
+}
+3. Create Group Trip
+Request
+{
+  "action": "create_group_trip",
+  "packageID": 1,
+  "agencyID": 1,
+  "maxSize": 20,
+  "tripDate": "2026-12-15"
+}
+Success Response
+{
+  "status": "success",
+  "timestamp": 1779150000,
+  "data": {
+    "message": "Group trip created successfully.",
+    "tripID": 7
+  }
+}
+4. Get Group Trips
+Request
+{
+  "action": "get_group_trips",
+  "agencyID": 1
+}
+Success Response
+{
+  "status": "success",
+  "timestamp": 1779150000,
+  "data": [
+    {
+      "tripID": 7,
+      "maxSize": 20,
+      "tripDate": "2026-12-15",
+      "currentSize": 0,
+      "packageID": 1,
+      "agencyID": 1
+    }
+  ]
+}
+5. Update Group Trip
+Request
+{
+  "action": "update_group_trip",
+  "tripID": 7,
+  "maxSize": 25,
+  "tripDate": "2026-12-20"
+}
+Success Response
+{
+  "status": "success",
+  "timestamp": 1779150000,
+  "data": {
+    "message": "Group trip updated successfully."
+  }
+}
+6. Delete Group Trip
+Request
+{
+  "action": "delete_group_trip",
+  "tripID": 7
+}
+Success Response
+{
+  "status": "success",
+  "timestamp": 1779150000,
+  "data": {
+    "message": "Group trip deleted successfully."
+  }
+}
+7. Add Flight
+Request
+{
+  "action": "add_flight",
+  "packageID": 1,
+  "flightID": 4
+}
+Success Response
+{
+  "status": "success",
+  "timestamp": 1779150000,
+  "data": {
+    "message": "Flight added to package successfully."
+  }
+}
+8. Remove Flight
+Request
+{
+  "action": "remove_flight",
+  "packageID": 1,
+  "flightID": 4
+}
+Success Response
+{
+  "status": "success",
+  "timestamp": 1779150000,
+  "data": {
+    "message": "Flight removed from package successfully."
+  }
+}
+9. Add Accommodation
+Request
+{
+  "action": "add_accommodation",
+  "packageID": 1,
+  "accommodationID": 2
+}
+Success Response
+{
+  "status": "success",
+  "timestamp": 1779150000,
+  "data": {
+    "message": "Accommodation added to package successfully."
+  }
+}
+10. Remove Accommodation
+Request
+{
+  "action": "remove_accommodation",
+  "packageID": 1,
+  "accommodationID": 2
+}
+Success Response
+{
+  "status": "success",
+  "timestamp": 1779150000,
+  "data": {
+    "message": "Accommodation removed from package successfully."
+  }
+}
+11. Add Restaurant
+Request
+{
+  "action": "add_restaurant",
+  "packageID": 1,
+  "restaurantID": 5
+}
+Success Response
+{
+  "status": "success",
+  "timestamp": 1779150000,
+  "data": {
+    "message": "Restaurant added to package successfully."
+  }
+}
+12. Remove Restaurant
+Request
+{
+  "action": "remove_restaurant",
+  "packageID": 1,
+  "restaurantID": 5
+}
+Success Response
+{
+  "status": "success",
+  "timestamp": 1779150000,
+  "data": {
+    "message": "Restaurant removed from package successfully."
+  }
+}
+13. Add Attraction
+Request
+{
+  "action": "add_attraction",
+  "packageID": 1,
+  "destinationID": 3,
+  "name": "Table Mountain"
+}
+Success Response
+{
+  "status": "success",
+  "timestamp": 1779150000,
+  "data": {
+    "message": "Attraction added to package successfully."
+  }
+}
+14. Remove Attraction
+Request
+{
+  "action": "remove_attraction",
+  "packageID": 1,
+  "destinationID": 3,
+  "name": "Table Mountain"
+}
+Success Response
+{
+  "status": "success",
+  "timestamp": 1779150000,
+  "data": {
+    "message": "Attraction removed from package successfully."
+  }
+}
+
+
 
