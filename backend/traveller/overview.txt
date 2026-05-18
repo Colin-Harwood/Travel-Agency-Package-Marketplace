@@ -1,0 +1,103 @@
+### OVERVIEW
+
+EVERY SINGLE REQUEST NEEDS THE TRAVELLERS API KEY
+
+## getAllPackages
+
+
+
+## getPackage
+
+#Request format:
+{
+    "type": "getPackage",
+    "apikey": "",
+    "packageId": "" (the actual id)
+}
+
+#Response:
+Error:
+{
+    "status": "error",
+    "data": "Invalid api key." (or any other error)
+}
+
+Success:
+ARRAYS:reviews, flights, accomodations, restaurants, accomodations, upcomingGroupTrips
+    gives arrays of all the of these
+
+{
+    "status": "success",
+    "timestamp": 1779119067,
+    "data": {
+        "packageID": 1,
+        "name": "Paris Classic Getaway",
+        "type": "Cultural",
+        "description": "Explore Parisian art, cuisine and iconic landmarks over 7 days.",
+        "pricePerPerson": "15000.00",
+        "duration": 7,
+        "status": "Active",
+        "destinationCity": "Paris",
+        "destinationCountry": "France",
+        "agencyDetails": {
+            "agencyName": "Sunrise Travels",
+            "email": "info@sunrisetravels.com",
+            "phone": "+27115550001",
+            "street": "12 Sun Street",
+            "city": "Johannesburg"
+        },
+        "reviews": [
+            {
+                "rating": 5,
+                "comment": "Absolutely fantastic trip from start to finish. The agency handled everything perfectly.",
+                "date": "2026-09-29"
+            }
+        ],
+        "flights": [
+            {
+                "airline": "Air France",
+                "flightNumber": "AF101",
+                "departure": "2026-07-01 08:00:00",
+                "arrival": "2026-07-01 18:00:00",
+                "price": 12000
+            },
+            {
+                "airline": "Qantas",
+                "flightNumber": "QF65",
+                "departure": "2026-08-21 18:00:00",
+                "arrival": "2026-08-22 13:00:00",
+                "price": 15200
+            }
+        ],
+        "accommodations": [
+            {
+                "name": "Generator Paris",
+                "type": "Hostel",
+                "rating": 3.8,
+                "pricePerNight": 800
+            }
+        ],
+        "restaurants": [
+            {
+                "name": "Le Cinq",
+                "cuisine": "French",
+                "priceRange": "$$$$"
+            }
+        ],
+        "attractions": [
+            {
+                "name": "Louvre Museum",
+                "entryFee": 17
+            }
+        ],
+        "upcomingGroupTrips": [
+            {
+                "tripID": 1,
+                "tripDate": "2026-07-07",
+                "maxSize": 16,
+                "currentSize": 3,
+                "spotsRemaining": 13
+            }
+        ]
+    }
+}
