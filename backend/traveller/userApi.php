@@ -36,7 +36,7 @@ class Database {
             $this->sendResponse("error", "Missing apikey field.", 400);
         }
 
-        $stmt = $this->conn->prepare("SELECT userID from TRAVELLER where userID = ?");
+        $stmt = $this->conn->prepare("SELECT userID from user where apiKey = ?");
         $stmt->bind_param("s", $request_data->apikey);
         $stmt->execute();
 
@@ -63,6 +63,7 @@ class Database {
         }
 
         // long sql to get everything aout the package
+        // use arrayagg to stop cartesian products and duplicate data
         $sql = "
             SELECT 
                 p.packageID, p.name, p.type, p.description, p.pricePerPerson, p.duration, p.status,
@@ -130,7 +131,7 @@ class Database {
                 }
             }
 
-            return $this->sendResponse("success", "Package retrieved", 200, $package);
+            return $this->sendResponse("success", $package, 200);
 
         } catch (mysqli_sql_exception $e) { 
             error_log("DB Error fetching package: " . $e->getMessage());
@@ -162,5 +163,8 @@ class Database {
         exit(); 
     }
 }
+
+$api = Database::instance($conn);
+$api->processRequest();
 
 ?>
