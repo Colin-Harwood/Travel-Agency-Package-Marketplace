@@ -1,0 +1,35 @@
+OVERVIEW
+Database Engine
+RDBMS: MariaDB
+Character Set: utf8mb4
+Collation: utf8mb4_unicode_ci
+Reserved word note: The table ORDER must always be wrapped in backticks in SQL queries: `ORDER`
+
+USER specialisation
+All users are stored in a central USER table. Every user, regardless of type, has a record here. 
+The USER table is specialzed into TRAVELLER and TRAVEL_AGENCY. 
+
+USER
+userID INT AUTO_INCREMENT PK
+firstName VARCHAR(50) NOT NULL
+middleName VARCHAR(50) nullable
+lastName VARCHAR(50) NOT NULL
+emailAddress VARCHAR(100) NOT NULL UNIQUE
+phoneNumber VARCHAR(20) NOT NULL
+password VARCHAR(255) NOT NULL — stored as a hex string representing a hashed password
+salt VARCHAR(255) NOT NULL — hex string salt used during password hashing
+apiKey VARCHAR(255) NOT NULL — random alphanumeric string for API authentication
+
+TRAVELLER
+userID INT PK, FK → USER(userID) ON DELETE CASCADE
+paymentID VARCHAR(100) nullable — reference to an external payment provider token
+
+TRAVEL_AGENCY
+userID INT PK, FK → USER(userID) ON DELETE CASCADE
+name VARCHAR(100) NOT NULL
+street VARCHAR(100)
+suburb VARCHAR(100)
+city VARCHAR(100)
+country VARCHAR(100)
+
+To get the full profile of a traveller, join USER and TRAVELLER on userID. To get the full profile of an agency, join USER and TRAVEL_AGENCY on userID.
