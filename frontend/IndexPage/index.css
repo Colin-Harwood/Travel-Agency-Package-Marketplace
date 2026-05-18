@@ -1,0 +1,117 @@
+:root {
+    --white: #f8f8f8;
+    --light-pink: #f8baba;
+    --medium-pink: #f87c7c;
+    --dark-pink: #f83e3e;
+    --red: #f80000;
+    --text-dark: #222;
+}
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+body {
+    min-height: 100vh;
+    background-color: var(--white);
+}
+.hero {
+    min-height: 100vh;
+    width: 100%;
+    background-image:
+        linear-gradient(
+            rgba(0, 0, 0, 0.15),
+            rgba(0, 0, 0, 0.25)
+        ),url("index.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 60px;
+}
+.hero-card {
+    width: 100%;
+    max-width: 520px;
+    min-height: 520px;
+
+    background-color: rgba(34, 34, 34, 0.82);
+    color: var(--white);
+
+    padding: 60px 50px;
+    border-radius: 4px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.35);
+}
+.hero-card h1 {
+    font-size: 78px;
+    line-height: 1;
+    color: #f87c7c;
+    margin-bottom: 10px;
+}
+.hero-card h2 {
+    font-size: 42px;
+    font-weight: normal;
+    color: var(--white);
+    margin-bottom: 35px;
+}
+.hero-card p {
+    font-size: 19px;
+    line-height: 1.5;
+    color: var(--white);
+    margin-bottom: 35px;
+}
+.button-group {
+    display: flex;
+    gap: 15px;
+}
+.btn {
+    display: inline-block;
+    padding: 13px 26px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: bold;
+    transition: 0.2s ease;
+}
+.traveller-btn,
+.agency-btn {
+    background-color: var(--white);
+    color: var(--text-dark);
+}
+.traveller-btn:hover,
+.agency-btn:hover {
+    background-color: var(--medium-pink);
+    color: var(--text-dark);
+}
+@media screen and (max-width: 750px) {
+    .hero {
+        padding: 25px;
+        justify-content: center;
+    }
+    .hero-card {
+        max-width: 100%;
+        min-height: auto;
+        padding: 40px 30px;
+        text-align: center;
+    }
+    .hero-card h1 {
+        font-size: 54px;
+    }
+    .hero-card h2 {
+        font-size: 30px;
+    }
+    .button-group {
+        flex-direction: column;
+    }
+    .btn {
+        width: 100%;
+    }
+}
