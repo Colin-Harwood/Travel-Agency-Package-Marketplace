@@ -52,6 +52,8 @@ class Database {
             $this->getPackage($request_data);
         } elseif ($request_data->type === "bookPackage") {
             $this->bookPackage($request_data);
+        } elseif ($request_data->type === "cancelBooking") {
+            $this->cancelBooking($request_data);
         } else {
             $this->sendResponse("error", "Invalid request type", 400);
         }
@@ -258,7 +260,78 @@ class Database {
         }
     }
 
+    public function cancelBooking($data) {
+        // make sure the orderId is sent
+        if (!isset($data->orderId)) {
+            return $this->sendResponse("error", "Missing required cancellation details", 400);
+        }
 
+        $stmt = $this->conn->prepare("SELECT * from user where apiKey = ?");
+        $stmt->bind_param("s", $data->apikey);
+        $stmtFetch = $stmt->execute();
+        $userRes = $stmt->get_result();
+        $userInfo = $userRes->fetch_assoc();
+
+        try {
+            // START TRANSACTION
+            $this->conn->begin_transaction();
+
+            // fetch the order details
+            // lock with the for update
+            $sqlFetch = "
+                SELECT o.numTravellers, o.status, gt.tripID 
+                FROM `ORDER` o
+                JOIN GROUP_TRIP gt ON o.packageID = gt.packageID AND o.startDate = gt.tripDate
+                WHERE o.orderID = ? AND o.userID = ?
+                FOR UPDATE
+            ";
+            $stmtFetch = $this->conn->prepare($sqlFetch);
+            $stmtFetch->bind_param("ii", $data->orderId, $userInfo["userID"]);
+            $stmtFetch->execute();
+            $result = $stmtFetch->get_result();
+            $order = $result->fetch_assoc();
+
+            // make sure order was found and no double cancel
+            if (!$order) {
+                throw new Exception("Order not found or you do not have permission to cancel it.");
+            }
+            if ($order['status'] === 'Cancelled') {
+                throw new Exception("This booking is already cancelled.");
+            }
+
+            // change order to cancelled
+            $sqlUpdateOrder = "UPDATE `ORDER` SET status = 'Cancelled' WHERE orderID = ?";
+            $stmtUpdateOrder = $this->conn->prepare($sqlUpdateOrder);
+            $stmtUpdateOrder->bind_param("i", $data->orderId);
+            $stmtUpdateOrder->execute();
+
+            // remove traveller from the trip
+            $sqlDeleteRoster = "DELETE FROM TRAVELLER_GROUP_TRIP WHERE userID = ? AND tripID = ?";
+            $stmtDeleteRoster = $this->conn->prepare($sqlDeleteRoster);
+            $stmtDeleteRoster->bind_param("ii", $userInfo["userID"], $order['tripID']);
+            $stmtDeleteRoster->execute();
+
+            // lower the trip capacity, just make sure doesnt go below 0
+            // greater to not screw up
+            $sqlUpdateCapacity = "UPDATE GROUP_TRIP 
+                                  SET currentSize = GREATEST(0, currentSize - ?) 
+                                  WHERE tripID = ?";
+            $stmtCapacity = $this->conn->prepare($sqlUpdateCapacity);
+            $stmtCapacity->bind_param("ii", $order['numTravellers'], $order['tripID']);
+            $stmtCapacity->execute();
+
+            // commit the transaction
+            $this->conn->commit();
+            return $this->sendResponse("success", "Booking successfully cancelled and spots freed up", 200);
+
+        } catch (Exception $e) {
+            // rollback transaction if mess up
+            $this->conn->rollback();
+            
+            error_log("Cancellation Transaction Failed: " . $e->getMessage());
+            return $this->sendResponse("error", $e->getMessage(), 400);
+        }
+    }
 
     private function sendResponse($status, $data, $http_code = 200) {
         http_response_code($http_code);
