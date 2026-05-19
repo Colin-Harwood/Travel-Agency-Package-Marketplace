@@ -1,0 +1,179 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body,
+html {
+  min-height: 100vh;
+  font-family: "Share Tech Mono", monospace, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+.video-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.bg-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.content-wrapper {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.form-main {
+  background-color: #f80000;
+  border-radius: 12px;
+  max-width: 400px;
+  width: 100%;
+  padding: 40px 30px;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.form-main h1 {
+  font-size: 2rem;
+  margin-bottom: 25px;
+  color: white;
+  text-align: left;
+}
+
+.error-message {
+  color: #ffcccc;
+  margin-bottom: 15px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.signup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  color: #ccc;
+  font-size: 0.85rem;
+  margin-bottom: 5px;
+}
+
+.name,
+.firstname,
+.surname,
+.email,
+.password,
+.phone {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  color: white;
+  padding: 12px 15px;
+  border-radius: 6px;
+  font-family: inherit;
+  outline: none;
+  font-size: 1rem;
+  transition:
+    border-color 0.3s,
+    box-shadow 0.3s;
+}
+
+.name::placeholder,
+.firstname::placeholder,
+.surname::placeholder,
+.email::placeholder,
+.password::placeholder,
+.phone::placeholder {
+  color: #ffcccc;
+}
+
+.name:focus,
+.surname:focus,
+.email:focus,
+.password:focus,
+.phone:focus {
+  border-color: #ffffff;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+}
+
+.checkbox-group {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 5px;
+  margin-bottom: 10px;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: white;
+  font-size: 0.85rem;
+  cursor: pointer;
+  margin: 0;
+}
+
+.checkbox-group input[type="checkbox"] {
+  accent-color: #990000;
+  cursor: pointer;
+}
+
+.btn-submit {
+  background-color: #990000;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 30px;
+  padding: 12px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition:
+    background-color 0.3s ease,
+    transform 0.1s;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.btn-submit:hover {
+  background-color: #800000;
+  transform: translateY(-1px);
+}
+
+.bottom-link {
+  text-align: center;
+  margin-top: 20px;
+  color: white;
+  font-size: 0.9rem;
+}
+
+.bottom-link a {
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.bottom-link a:hover {
+  text-decoration: underline;
+  color: #ffcccc;
+}

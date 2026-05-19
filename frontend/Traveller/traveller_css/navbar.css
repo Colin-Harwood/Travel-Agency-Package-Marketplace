@@ -1,0 +1,76 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Share Tech Mono", monospace, sans-serif;
+  color: white;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 60px;
+  background-color: #f80000;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  text-decoration: none;
+  color: white;
+}
+
+.nav-logo-img {
+  width: 500px;
+  height: auto;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 30px;
+}
+
+.nav-links li a {
+  color: white;
+  text-decoration: none;
+  font-size: 1.1rem;
+  padding-bottom: 5px;
+  transition:
+    color 0.3s ease,
+    border-bottom-color 0.3s ease;
+  border-bottom: 2px solid transparent;
+}
+
+.nav-links li a:hover {
+  color: #ffb3b3;
+}
+
+.nav-links li a.active {
+  border-bottom-color: white;
+  font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    padding: 15px 20px;
+    gap: 15px;
+  }
+  .nav-links {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+  }
+  .nav-links li a {
+    font-size: 0.95rem;
+  }
+}
