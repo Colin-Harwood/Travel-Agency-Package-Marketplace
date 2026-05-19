@@ -10,7 +10,7 @@ function renderHeader($pageTitle = "Tripistry") {
         <nav class="nav-tabs">
             <a href="loginAgency.php" class="nav-tab">Login</a>
             <a href="signupAgency.php" class="nav-tab">Registration</a>
-            <a href="#" class="nav-tab">Tab 3</a>
+            <a href="createPackage.php" class="nav-tab">Create Package</a>
             <a href="#" class="nav-tab">Tab 4</a>
         </nav>
     </header>
