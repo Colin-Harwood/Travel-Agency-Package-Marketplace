@@ -292,5 +292,116 @@ Success Response
   }
 }
 
+1. Get Orders
+
+Returns all orders for packages owned by a specific travel agency.
+
+Request
+{
+  "action": "get_orders",
+  "agencyID": 1
+}
+Success Response
+{
+  "status": "success",
+  "timestamp": 1779150000,
+  "data": [
+    {
+      "orderID": 15,
+      "startDate": "2026-12-20",
+      "numTravellers": 2,
+      "status": "Confirmed",
+      "totalPrice": "25999.98",
+      "packageID": 1,
+      "packageName": "Cape Town Explorer Deluxe",
+      "userID": 7,
+      "travellerName": "John Smith",
+      "emailAddress": "john@example.com"
+    },
+    {
+      "orderID": 14,
+      "startDate": "2026-11-10",
+      "numTravellers": 4,
+      "status": "Pending",
+      "totalPrice": "51999.96",
+      "packageID": 3,
+      "packageName": "Safari Adventure",
+      "userID": 9,
+      "travellerName": "Sarah Jones",
+      "emailAddress": "sarah@example.com"
+    }
+  ]
+}
+Empty Response (No Orders)
+{
+  "status": "success",
+  "timestamp": 1779150000,
+  "data": []
+}
+2. Get Reviews
+
+Returns all reviews for packages owned by the agency.
+
+Request
+{
+  "action": "get_reviews",
+  "agencyID": 1
+}
+Success Response
+{
+  "status": "success",
+  "timestamp": 1779150000,
+  "data": [
+    {
+      "reviewID": 21,
+      "comment": "Amazing experience and very well organised.",
+      "starRating": 5,
+      "reviewDate": "2026-05-10",
+      "packageID": 1,
+      "packageName": "Cape Town Explorer Deluxe",
+      "userID": 7,
+      "travellerName": "John Smith"
+    },
+    {
+      "reviewID": 22,
+      "comment": "Great trip but accommodation could be better.",
+      "starRating": 4,
+      "reviewDate": "2026-05-12",
+      "packageID": 3,
+      "packageName": "Safari Adventure",
+      "userID": 9,
+      "travellerName": "Sarah Jones"
+    }
+  ]
+}
+Empty Response (No Reviews)
+{
+  "status": "success",
+  "timestamp": 1779150000,
+  "data": []
+}
+3. Get Dashboard Stats
+
+Returns summary statistics for the agency dashboard.
+
+Request
+{
+  "action": "get_dashboard_stats",
+  "agencyID": 1
+}
+Success Response
+{
+  "status": "success",
+  "timestamp": 1779150000,
+  "data": {
+    "totalPackages": 12,
+    "activePackages": 8,
+    "totalOrders": 145,
+    "confirmedOrders": 102,
+    "totalRevenue": 1245999.5,
+    "averageRating": 4.67,
+    "totalReviews": 58
+  }
+}
 
 
