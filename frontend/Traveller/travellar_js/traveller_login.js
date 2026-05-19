@@ -1,63 +1,50 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const showPasswordCheckbox = document.getElementById("show-password");
+    var loginForm = document.getElementById("loginForm");
+    var loginError = document.getElementById("login-error");
+    var showPassword = document.getElementById("show-password");
+    var passwordInput = document.getElementById("password");
 
-    if (showPasswordCheckbox) {
-        showPasswordCheckbox.addEventListener("change", function () {
-            const passwordInput = document.getElementById("password");
-            if (this.checked) {
-                passwordInput.type = "text";
-            } else {
-                passwordInput.type = "password";
-            }
+    if (showPassword && passwordInput) {
+        showPassword.addEventListener("change", function () {
+            passwordInput.type = showPassword.checked ? "text" : "password";
         });
     }
 
-    document.getElementById("loginForm").addEventListener("submit", function (e) {
-        e.preventDefault();
+    if (!loginForm) {
+        return;
+    }
 
-        const email = document.getElementById("email").value.trim();
-        const password = document.getElementById("password").value;
-        const errorDiv = document.getElementById("login-error");
+    loginForm.addEventListener("submit", function (event) {
+        event.preventDefault();
 
-        errorDiv.innerText = "";
-        errorDiv.style.color = "red";
+        loginError.textContent = "";
 
-        if (email === "" || password === "") {
-            errorDiv.innerText = "Must fill in email and password";
+        var email = document.getElementById("email").value.trim();
+        var password = document.getElementById("password").value.trim();
+
+        if (!email || !password) {
+            loginError.textContent = "Please enter your email and password.";
             return;
         }
 
-        fetch("http://localhost/Travel-Agency-Package-Marketplace/backend/loginLogout/api.php", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                type: "travellerLogin",
-                email: email,
-                password: password
-            })
-        })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === "success") {
-                    localStorage.setItem("userID", data.data.userID);
-                    localStorage.setItem("userType", data.data.userType);
-                    localStorage.setItem("apiKey", data.data.apiKey);
+        TravelAPI.travellerLogin(email, password, function (error, response) {
+            if (error) {
+                loginError.textContent = error.message;
+                console.error(error);
+                return;
+            }
 
-                    errorDiv.style.color = "green";
-                    errorDiv.innerText = "Login successful! Redirecting...";
+            if (response.status !== "success") {
+                loginError.textContent = response.message || response.data || "Login failed.";
+                console.error(response);
+                return;
+            }
 
-                    setTimeout(() => {
-                        window.location.href = "index.html";
-                    }, 1000);
-                } else {
-                    errorDiv.innerText = data.message || "Invalid email or password.";
-                }
-            })
-            .catch(err => {
-                errorDiv.innerText = "Server error during login.";
-                console.error(err);
-            });
+            localStorage.setItem("apiKey", response.data.apiKey);
+            localStorage.setItem("userID", response.data.userID);
+            localStorage.setItem("userType", response.data.userType);
+
+            window.location.href = "packages.php";
+        });
     });
 });

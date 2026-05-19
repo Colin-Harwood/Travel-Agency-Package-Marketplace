@@ -1,75 +1,55 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const form = document.getElementById("signup");
-    const errorDiv = document.getElementById("error-message");
-    const showPasswordCheckbox = document.getElementById("show-password");
+    var signupForm = document.getElementById("signup");
+    var errorMessage = document.getElementById("error-message");
+    var showPassword = document.getElementById("show-password");
+    var passwordInput = document.getElementById("password");
 
-    if (showPasswordCheckbox) {
-        showPasswordCheckbox.addEventListener("change", function () {
-            const passwordInput = document.getElementById("password");
-            if (this.checked) {
-                passwordInput.type = "text";
-            } else {
-                passwordInput.type = "password";
-            }
+    if (showPassword && passwordInput) {
+        showPassword.addEventListener("change", function () {
+            passwordInput.type = showPassword.checked ? "text" : "password";
         });
     }
 
-    form.addEventListener("submit", function (e) {
-        e.preventDefault();
+    if (!signupForm) {
+        return;
+    }
 
-        const firstName = document.getElementById("name").value.trim();
-        const lastName = document.getElementById("surname").value.trim();
-        const email = document.getElementById("email").value.trim();
-        const phoneNumber = document.getElementById("phone").value.trim();
-        const password = document.getElementById("password").value;
+    signupForm.addEventListener("submit", function (event) {
+        event.preventDefault();
 
-        errorDiv.innerText = "";
-        errorDiv.style.color = "red";
+        errorMessage.textContent = "";
 
-        if (!firstName || !lastName || !email || !password || !phoneNumber) {
-            errorDiv.innerText = "All fields are required.";
+        var firstName = document.getElementById("name").value.trim();
+        var lastName = document.getElementById("surname").value.trim();
+        var email = document.getElementById("email").value.trim();
+        var phoneNumber = document.getElementById("phone").value.trim();
+        var password = document.getElementById("password").value.trim();
+
+        if (!firstName || !lastName || !email || !phoneNumber || !password) {
+            errorMessage.textContent = "Please fill in all fields.";
             return;
         }
 
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        if (!emailRegex.test(email)) {
-            errorDiv.innerText = "Please enter a valid email address.";
-            return;
-        }
+        TravelAPI.travellerRegister(firstName, lastName, email, phoneNumber, password, function (error, response) {
+            if (error) {
+                errorMessage.textContent = error.message;
+                console.error(error);
+                return;
+            }
 
-        const payload = {
-            type: "travellerRegister",
-            email: email,
-            firstName: firstName,
-            lastName: lastName,
-            phoneNumber: phoneNumber,
-            password: password
-        };
+            if (response.status !== "success") {
+                errorMessage.textContent = response.message || response.data || "Registration failed.";
+                console.error(response);
+                return;
+            }
 
-        fetch("http://localhost/Travel-Agency-Package-Marketplace/backend/loginLogout/api.php", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(payload)
-        })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === "success") {
-                    localStorage.setItem("userID", data.data.userID);
-                    localStorage.setItem("userType", data.data.userType);
-                    localStorage.setItem("apiKey", data.data.apiKey);
+            localStorage.setItem("apiKey", response.data.apiKey);
+            localStorage.setItem("userID", response.data.userID);
+            localStorage.setItem("userType", response.data.userType);
 
-                    alert("Account created successfully!");
-                    form.reset();
-                    window.location.href = "index.html";
-                } else {
-                    errorDiv.innerText = data.message || "Registration failed.";
-                }
-            })
-            .catch(err => {
-                errorDiv.innerText = "Server error. Please try again later.";
-                console.error(err);
-            });
+            alert("Account created successfully.");
+
+            window.location.href = "packages.php";
+        });
     });
 });

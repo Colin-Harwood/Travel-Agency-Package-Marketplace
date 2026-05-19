@@ -1,12 +1,15 @@
 <?php
 include "header.php";
 ?>
-<link rel="stylesheet" href="traveller_css/traveller_login.css">
+
 <div class="video-container">
     <video autoplay muted loop class="bg-video">
-        <source src="traveller_img/Beautiful Destinations in Greece with The Luxury Collection.mp4" type="video/mp4">
+        <source
+            src="/Travel-Agency-Package-Marketplace/frontend/Traveller/traveller_img/Beautiful Destinations in Greece with The Luxury Collection.mp4"
+            type="video/mp4">
     </video>
 </div>
+
 <main class="content-wrapper">
     <div class="form-main">
         <h1 class="form-title">Register</h1>
@@ -51,8 +54,9 @@ include "header.php";
     </div>
 </main>
 
-<script src="traveller_js/api.js"></script>
-<script src="traveller_js/traveller_login.js"></script>
+<script src="/Travel-Agency-Package-Marketplace/frontend/Traveller/traveller_js/api.js"></script>
+<script src="/Travel-Agency-Package-Marketplace/frontend/Traveller/traveller_js/traveller_signup.js"></script>
+
 </body>
 
 </html>

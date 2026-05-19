@@ -1,0 +1,311 @@
+body {
+  background-color: #f4f6f9;
+  color: #333333;
+  font-family: "Share Tech Mono", monospace, sans-serif;
+  min-height: 100vh;
+  margin: 0;
+}
+
+.packages-wrapper {
+  max-width: 1400px;
+  margin: 40px auto;
+  padding: 0 40px;
+}
+
+.section-title {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #111111;
+  margin-bottom: 5px;
+}
+
+.section-subtitle {
+  color: #555555;
+  font-size: 1rem;
+  margin-bottom: 30px;
+}
+
+.packages-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 25px;
+}
+
+.package-card {
+  border: 1px solid #e0e0e0;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  border-radius: 6px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.package-card:hover {
+  border-color: #cccccc;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+  transform: translateY(-5px);
+}
+
+.fav-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #dddddd;
+  color: #999999;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.2rem;
+  z-index: 10;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.fav-btn:hover {
+  background: #f80000;
+  color: white;
+  border-color: #f80000;
+}
+
+.card-image-placeholder {
+  height: 180px;
+  background: linear-gradient(135deg, #e9ecef, #ced4da);
+  border-bottom: 1px solid #eeeeee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Rajdhani", sans-serif;
+  font-size: 1.5rem;
+  color: #888888;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.card-content {
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.card-type-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.8rem;
+  color: #666666;
+  margin-bottom: 8px;
+}
+
+.badge {
+  background-color: #273cf5;
+  color: white;
+  padding: 3px 6px;
+  border-radius: 3px;
+  font-weight: bold;
+  font-size: 0.75rem;
+}
+
+.card-title {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #111111;
+  margin-bottom: 5px;
+  line-height: 1.2;
+}
+
+.card-location {
+  font-size: 0.85rem;
+  color: #777777;
+  margin-bottom: 12px;
+}
+
+.card-rating {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.rating-score {
+  background-color: #f80000;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.rating-text {
+  font-size: 0.85rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.rating-word {
+  font-weight: bold;
+  color: #111111;
+}
+
+.rating-count {
+  color: #777777;
+  font-size: 0.75rem;
+}
+
+.card-distance {
+  font-size: 0.85rem;
+  color: #555555;
+  margin-bottom: 20px;
+}
+
+.card-price-row {
+  margin-top: auto;
+  text-align: right;
+  font-size: 0.9rem;
+  color: #666666;
+}
+
+.card-price {
+  display: block;
+  font-family: "Rajdhani", sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111111;
+}
+
+@media (max-width: 768px) {
+  .packages-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
+}
+.packages-message {
+  margin-bottom: 20px;
+  padding: 12px 14px;
+  border: 1px solid #e0e0e0;
+  background-color: #ffffff;
+  color: #333333;
+  border-radius: 6px;
+  display: none;
+}
+
+.packages-message:not(:empty) {
+  display: block;
+}
+
+.packages-message.error {
+  border-color: #f80000;
+  color: #990000;
+  background-color: #fff0f0;
+}
+
+.card-description {
+  font-size: 0.82rem;
+  color: #666666;
+  line-height: 1.35;
+  margin-bottom: 12px;
+}
+
+.card-trip {
+  font-size: 0.85rem;
+  color: #555555;
+  margin-bottom: 14px;
+}
+
+.booking-panel {
+  margin-top: 16px;
+  border-top: 1px solid #eeeeee;
+  padding-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.booking-panel label {
+  font-size: 0.78rem;
+  color: #555555;
+  font-weight: bold;
+}
+
+.trip-select,
+.traveller-count {
+  width: 100%;
+  border: 1px solid #dddddd;
+  border-radius: 5px;
+  padding: 9px;
+  font-family: inherit;
+  background-color: #ffffff;
+  color: #111111;
+  outline: none;
+}
+
+.trip-select:focus,
+.traveller-count:focus {
+  border-color: #273cf5;
+}
+
+.button-book,
+.button-cancel {
+  width: 100%;
+  border: none;
+  border-radius: 30px;
+  padding: 10px 12px;
+  font-family: inherit;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.button-book {
+  background-color: #273cf5;
+  color: #ffffff;
+}
+
+.button-book:hover:not(:disabled) {
+  background-color: #1728bd;
+  transform: translateY(-1px);
+}
+
+.button-cancel {
+  background-color: #f80000;
+  color: #ffffff;
+}
+
+.button-cancel:hover:not(:disabled) {
+  background-color: #b80000;
+  transform: translateY(-1px);
+}
+
+.button-book:disabled,
+.button-cancel:disabled,
+.trip-select:disabled,
+.traveller-count:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.card-status {
+  min-height: 18px;
+  font-size: 0.78rem;
+  color: #555555;
+  line-height: 1.35;
+}
+
+.empty-state {
+  grid-column: 1 / -1;
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 24px;
+  color: #555555;
+  text-align: center;
+}
