@@ -1,40 +1,36 @@
 var TravelAPI = (function () {
     var LOGIN_API_URL = "http://localhost/Travel-Agency-Package-Marketplace/backend/loginLogout/api.php";
+    var PACKAGE_API_URL = "http://localhost/Travel-Agency-Package-Marketplace/backend/userApi.php";
 
-    function sendRequest(payload, callback) {
+    function sendRequest(url, payload, callback) {
         var xhr = new XMLHttpRequest();
-
-        xhr.open("POST", LOGIN_API_URL, true);
+        xhr.open("POST", url, true);
         xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 
         xhr.onreadystatechange = function () {
             if (xhr.readyState === 4) {
                 var response = null;
-
                 try {
                     response = JSON.parse(xhr.responseText);
                 } catch (e) {
-                    callback(new Error("Server did not return valid JSON: " + xhr.responseText), null);
+                    callback(new Error("Invalid JSON: " + xhr.responseText), null);
                     return;
                 }
-
                 if (xhr.status >= 200 && xhr.status < 300) {
                     callback(null, response);
                 } else {
-                    callback(new Error(response.message || response.data || "Server returned status " + xhr.status), response);
+                    callback(new Error(response.message || response.data || "Server error " + xhr.status), response);
                 }
             }
         };
-
         xhr.onerror = function () {
-            callback(new Error("Network error. Could not connect to the API."), null);
+            callback(new Error("Network error"), null);
         };
-
         xhr.send(JSON.stringify(payload));
     }
 
     function travellerRegister(firstName, lastName, email, phoneNumber, password, callback) {
-        sendRequest({
+        sendRequest(LOGIN_API_URL, {
             type: "travellerRegister",
             firstName: firstName,
             middleName: "",
@@ -46,7 +42,7 @@ var TravelAPI = (function () {
     }
 
     function travellerLogin(email, password, callback) {
-        sendRequest({
+        sendRequest(LOGIN_API_URL, {
             type: "travellerLogin",
             email: email,
             password: password
@@ -54,16 +50,63 @@ var TravelAPI = (function () {
     }
 
     function logout(apiKey, callback) {
-        sendRequest({
+        sendRequest(LOGIN_API_URL, {
             type: "logout",
             apiKey: apiKey
         }, callback);
     }
 
+    function getApiKey() {
+        return localStorage.getItem("apiKey");
+    }
+
+    function getPackage(packageId, callback) {
+        var apiKey = getApiKey();
+        if (!apiKey) {
+            callback(new Error("No API key. Please log in."), null);
+            return;
+        }
+        sendRequest(PACKAGE_API_URL, {
+            type: "getPackage",
+            apikey: apiKey,
+            packageId: packageId
+        }, callback);
+    }
+
+    function bookPackage(groupTripID, numTravellers, callback) {
+        var apiKey = getApiKey();
+        if (!apiKey) {
+            callback(new Error("No API key. Please log in."), null);
+            return;
+        }
+        sendRequest(PACKAGE_API_URL, {
+            type: "bookPackage",
+            apikey: apiKey,
+            groupTripID: groupTripID,
+            numTravellers: numTravellers
+        }, callback);
+    }
+
+    function cancelBooking(orderId, callback) {
+        var apiKey = getApiKey();
+        if (!apiKey) {
+            callback(new Error("No API key. Please log in."), null);
+            return;
+        }
+        sendRequest(PACKAGE_API_URL, {
+            type: "cancelBooking",
+            apikey: apiKey,
+            orderId: orderId
+        }, callback);
+    }
+
     return {
-        sendRequest: sendRequest,
         travellerRegister: travellerRegister,
         travellerLogin: travellerLogin,
-        logout: logout
+        logout: logout,
+        getApiKey: getApiKey,
+        getPackage: getPackage,
+        bookPackage: bookPackage,
+        cancelBooking: cancelBooking
     };
 })();
