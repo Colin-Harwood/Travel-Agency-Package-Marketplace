@@ -1,4 +1,4 @@
-const API_URL = "../API/api.php";
+const API_URL = "http://localhost/Travel-Agency-Package-Marketplace/backend/Agency_code/agencyAPI.php";
 
 document.addEventListener("DOMContentLoaded", function () {
     // get the data from the form
