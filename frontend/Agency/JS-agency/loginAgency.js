@@ -19,7 +19,7 @@ document.getElementById("loginForm").addEventListener("submit", function (e) {
         return;
     }
     // send req to api
-    fetch("http://localhost/Travel-Agency-Package-Marketplace/backend/loginLogout/api.php", {
+    fetch("http://localhost/COS-221-PA5/Travel-Agency-Package-Marketplace/backend/loginLogout/api.php", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"

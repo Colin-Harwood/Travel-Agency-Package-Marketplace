@@ -64,10 +64,10 @@ document.getElementById("signupForm").addEventListener("submit", function (e) {
         errorMsg.textContent = "Password must have at least 1 special character";
         return;
     }
-    // SENDING THE DATA TO THE API
-    fetch("http://localhost/Travel-Agency-Package-Marketplace/backend/loginLogout/api.php", {
-        method:"POST",
-        headers:{
+    // SENDING THE DATA TO THE SIGNUP API
+    fetch("http://localhost/COS-221-PA5/Travel-Agency-Package-Marketplace/backend/loginLogout/api.php", {
+        method: "POST",
+        headers: {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -85,16 +85,21 @@ document.getElementById("signupForm").addEventListener("submit", function (e) {
             password: password
         })
     })
-    .then(res => res.json())
-    .then(data => {
+    .then(function (res) {
+        return res.json();
+    })
+    .then(function (data) {
         if (data.status === "success") {
             errorMsg.textContent = "New agency added. Try logging in.";
-            window.location.href = "loginAgency.php";
+
+            setTimeout(function () {
+                window.location.href = "loginAgency.php";
+            }, 800);
         } else {
-            errorMsg.textContent = data.message;
+            errorMsg.textContent = data.message || data.data || "Agency signup failed.";
         }
     })
-    .catch(err => {
+    .catch(function (err) {
         errorMsg.textContent = "Server error from agency signup.";
         console.error(err);
     });
