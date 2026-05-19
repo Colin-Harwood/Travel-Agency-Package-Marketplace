@@ -1,6 +1,14 @@
 var TravelAPI = (function () {
-    var LOGIN_API_URL = "http://localhost/Travel-Agency-Package-Marketplace/backend/loginLogout/api.php";
-    var PACKAGE_API_URL = "http://localhost/Travel-Agency-Package-Marketplace/backend/userApi.php";
+    function getBaseUrl() {
+        var path = window.location.pathname;
+        if (path.includes("/frontend/Traveller/")) {
+            return window.location.origin + "/Travel-Agency-Package-Marketplace/backend/traveller/userApi.php";
+        }
+        return window.location.origin + "/Travel-Agency-Package-Marketplace/backend/traveller/userApi.php";
+    }
+
+    var LOGIN_API_URL = window.location.origin + "/Travel-Agency-Package-Marketplace/backend/loginLogout/api.php";
+    var PACKAGE_API_URL = getBaseUrl();
 
     function sendRequest(url, payload, callback) {
         var xhr = new XMLHttpRequest();
@@ -13,7 +21,7 @@ var TravelAPI = (function () {
                 try {
                     response = JSON.parse(xhr.responseText);
                 } catch (e) {
-                    callback(new Error("Invalid JSON: " + xhr.responseText), null);
+                    callback(new Error("Invalid JSON: " + xhr.responseText.substring(0, 200)), null);
                     return;
                 }
                 if (xhr.status >= 200 && xhr.status < 300) {
