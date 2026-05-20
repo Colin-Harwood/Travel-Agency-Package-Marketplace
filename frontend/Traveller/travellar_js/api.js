@@ -1,14 +1,11 @@
 var TravelAPI = (function () {
     function getBaseUrl() {
-        var path = window.location.pathname;
-        if (path.includes("/frontend/Traveller/")) {
-            return window.location.origin + "/Travel-Agency-Package-Marketplace/backend/traveller/userApi.php";
-        }
         return window.location.origin + "/Travel-Agency-Package-Marketplace/backend/traveller/userApi.php";
     }
 
     var LOGIN_API_URL = window.location.origin + "/Travel-Agency-Package-Marketplace/backend/loginLogout/api.php";
     var PACKAGE_API_URL = getBaseUrl();
+    var BOOKINGS_API_URL = window.location.origin + "/Travel-Agency-Package-Marketplace/backend/traveller/bookingsApi.php";
 
     function sendRequest(url, payload, callback) {
         var xhr = new XMLHttpRequest();
@@ -21,9 +18,10 @@ var TravelAPI = (function () {
                 try {
                     response = JSON.parse(xhr.responseText);
                 } catch (e) {
-                    callback(new Error("Invalid JSON: " + xhr.responseText.substring(0, 200)), null);
+                    callback(new Error("Invalid JSON returned by server: " + xhr.responseText.substring(0, 250)), null);
                     return;
                 }
+
                 if (xhr.status >= 200 && xhr.status < 300) {
                     callback(null, response);
                 } else {
@@ -31,9 +29,11 @@ var TravelAPI = (function () {
                 }
             }
         };
+
         xhr.onerror = function () {
-            callback(new Error("Network error"), null);
+            callback(new Error("Network error. Check that XAMPP/Apache is running and the API path is correct."), null);
         };
+
         xhr.send(JSON.stringify(payload));
     }
 
@@ -68,12 +68,29 @@ var TravelAPI = (function () {
         return localStorage.getItem("apiKey");
     }
 
-    function getPackage(packageId, callback) {
+    function requireApiKey(callback) {
         var apiKey = getApiKey();
         if (!apiKey) {
-            callback(new Error("No API key. Please log in."), null);
-            return;
+            callback(new Error("Please log in first."), null);
+            return null;
         }
+        return apiKey;
+    }
+
+    function getAllPackages(callback) {
+        var apiKey = requireApiKey(callback);
+        if (!apiKey) return;
+
+        sendRequest(PACKAGE_API_URL, {
+            type: "getAllPackages",
+            apikey: apiKey
+        }, callback);
+    }
+
+    function getPackage(packageId, callback) {
+        var apiKey = requireApiKey(callback);
+        if (!apiKey) return;
+
         sendRequest(PACKAGE_API_URL, {
             type: "getPackage",
             apikey: apiKey,
@@ -82,11 +99,9 @@ var TravelAPI = (function () {
     }
 
     function bookPackage(groupTripID, numTravellers, callback) {
-        var apiKey = getApiKey();
-        if (!apiKey) {
-            callback(new Error("No API key. Please log in."), null);
-            return;
-        }
+        var apiKey = requireApiKey(callback);
+        if (!apiKey) return;
+
         sendRequest(PACKAGE_API_URL, {
             type: "bookPackage",
             apikey: apiKey,
@@ -96,15 +111,26 @@ var TravelAPI = (function () {
     }
 
     function cancelBooking(orderId, callback) {
-        var apiKey = getApiKey();
-        if (!apiKey) {
-            callback(new Error("No API key. Please log in."), null);
-            return;
-        }
+        var apiKey = requireApiKey(callback);
+        if (!apiKey) return;
+
         sendRequest(PACKAGE_API_URL, {
             type: "cancelBooking",
             apikey: apiKey,
             orderId: orderId
+        }, callback);
+    }
+
+    function getUserBookings(callback) {
+        var apiKey = getApiKey();
+        if (!apiKey) {
+            callback(new Error("Please log in first."), null);
+            return;
+        }
+
+        sendRequest(BOOKINGS_API_URL, {
+            type: "getUserBookings",
+            apikey: apiKey
         }, callback);
     }
 
@@ -113,8 +139,10 @@ var TravelAPI = (function () {
         travellerLogin: travellerLogin,
         logout: logout,
         getApiKey: getApiKey,
+        getAllPackages: getAllPackages,
         getPackage: getPackage,
         bookPackage: bookPackage,
-        cancelBooking: cancelBooking
+        cancelBooking: cancelBooking,
+        getUserBookings: getUserBookings
     };
 })();

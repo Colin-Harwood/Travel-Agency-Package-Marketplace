@@ -1,207 +1,175 @@
-document.addEventListener("DOMContentLoaded", function() {
-    var container = document.getElementById("packagesGrid");
+document.addEventListener("DOMContentLoaded", function () {
     var messageDiv = document.getElementById("packagesMessage");
+    var grid = document.getElementById("packagesGrid");
 
     function setMessage(msg, isError) {
-        if (messageDiv) {
-            messageDiv.textContent = msg;
-            messageDiv.className = isError ? "packages-message error" : "packages-message";
-        }
+        if (!messageDiv) return;
+        messageDiv.textContent = msg || "";
+        messageDiv.className = isError ? "packages-message error" : "packages-message";
     }
 
-    function escapeHTML(str) {
-        return String(str || "").replace(/[&<>]/g, function(m) {
-            if (m === "&") return "&amp;";
-            if (m === "<") return "&lt;";
-            if (m === ">") return "&gt;";
-            return m;
+    function escapeHTML(value) {
+        return String(value === null || value === undefined ? "" : value).replace(/[&<>\"']/g, function (m) {
+            return {
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                "\"": "&quot;",
+                "'": "&#039;"
+            }[m];
         });
     }
 
     function formatPrice(value) {
-        return parseFloat(value || 0).toLocaleString("en-ZA", { minimumFractionDigits: 2 });
+        var number = parseFloat(value || 0);
+        if (isNaN(number)) number = 0;
+        return number.toLocaleString("en-ZA", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
     }
 
-    // Store orderId locally (if available)
-    function getStoredOrderId(packageId) {
-        var key = "booking_package_" + packageId;
-        return localStorage.getItem(key);
+    function stars() {
+        return '<span class="stars">* * * * *</span>';
     }
 
-    function storeOrderId(packageId, orderId) {
-        var key = "booking_package_" + packageId;
-        localStorage.setItem(key, orderId);
+    function packageInitials(pkg) {
+        var city = pkg.destinationCity || "Trip";
+        var country = pkg.destinationCountry || "Package";
+        return (city.charAt(0) + country.charAt(0)).toUpperCase();
     }
 
-    function removeStoredOrderId(packageId) {
-        var key = "booking_package_" + packageId;
-        localStorage.removeItem(key);
+    function shortText(value, limit) {
+        var text = String(value || "");
+        if (text.length <= limit) return text;
+        return text.substring(0, limit).trim() + "...";
     }
 
-    function renderPackage(pkg, storedOrderId) {
-        if (!pkg) {
-            container.innerHTML = "<div class='empty-state'>Package not found.</div>";
-            return;
+    function requireLogin() {
+        if (!TravelAPI.getApiKey()) {
+            setMessage("Please log in first before viewing packages.", true);
+            setTimeout(function () {
+                window.location.href = "traveller_login.php";
+            }, 900);
+            return false;
         }
+        return true;
+    }
 
-        var availableTrips = (pkg.upcomingGroupTrips || []).filter(t => t.spotsRemaining > 0);
-        var hasAvailableTrips = availableTrips.length > 0;
-
-        var tripsHtml = '<option value="">-- Select a trip --</option>';
-        if (hasAvailableTrips) {
-            for (var i = 0; i < availableTrips.length; i++) {
-                var trip = availableTrips[i];
-                tripsHtml += `<option value="${escapeHTML(trip.tripID)}">${escapeHTML(trip.tripDate)} - ${escapeHTML(trip.spotsRemaining)} spots left</option>`;
-            }
-        } else {
-            tripsHtml = '<option disabled>No upcoming trips with available spots</option>';
+    function computeAverageRating(reviews) {
+        if (!reviews || reviews.length === 0) return null;
+        var sum = 0;
+        for (var i = 0; i < reviews.length; i++) {
+            sum += parseInt(reviews[i].rating, 10);
         }
+        var avg = sum / reviews.length;
+        return { avg: avg.toFixed(1), count: reviews.length };
+    }
 
-        var agency = pkg.agencyDetails || {};
+    function ratingWordFromScore(score) {
+        var s = parseFloat(score);
+        if (s >= 9.0) return "Superb";
+        if (s >= 8.0) return "Excellent";
+        if (s >= 7.0) return "Very Good";
+        if (s >= 6.0) return "Good";
+        return "Average";
+    }
 
-        var html = `
-            <div class="package-detail">
-                <div class="package-header">
-                    <h2>${escapeHTML(pkg.name)}</h2>
-                    <p class="location">${escapeHTML(pkg.destinationCity)}, ${escapeHTML(pkg.destinationCountry)}</p>
-                    <p class="type">${escapeHTML(pkg.type)} Package · ${pkg.duration} days</p>
-                </div>
-                <div class="package-description">${escapeHTML(pkg.description)}</div>
-                <div class="package-price">ZAR ${formatPrice(pkg.pricePerPerson)} per person</div>
-                <div class="package-agency">
-                    <strong>Agency:</strong> ${escapeHTML(agency.agencyName)}<br>
-                    <strong>Contact:</strong> ${escapeHTML(agency.email)} | ${escapeHTML(agency.phone)}
-                </div>
-                <div class="booking-section">
-                    <h3>Book this package</h3>
-                    <div class="form-row">
-                        <label for="tripSelect">Choose trip date:</label>
-                        <select id="tripSelect" ${!hasAvailableTrips ? 'disabled' : ''}>${tripsHtml}</select>
+    function renderPackageCard(pkg) {
+        var isActive = String(pkg.status || "").toLowerCase() === "active";
+        var detailUrl = "package_view.php?id=" + encodeURIComponent(pkg.packageID);
+        var location = [pkg.destinationCity, pkg.destinationCountry].filter(Boolean).join(", ");
+        var durationText = pkg.duration ? pkg.duration + " Days duration" : "Duration not listed";
+
+        return `
+            <div class="package-card" data-package-id="${escapeHTML(pkg.packageID)}">
+                <button class="fav-btn" type="button" aria-label="Save package">+</button>
+                <a class="card-link" href="${detailUrl}" aria-label="View ${escapeHTML(pkg.name)}">
+                    <div class="card-image-placeholder">
+                        ${escapeHTML(pkg.type || "Package")}
                     </div>
-                    <div class="form-row">
-                        <label for="travellerCount">Number of travellers:</label>
-                        <input type="number" id="travellerCount" min="1" value="1" ${!hasAvailableTrips ? 'disabled' : ''}>
-                    </div>
-                    <button id="bookButton" ${!hasAvailableTrips ? 'disabled' : ''}>Book now</button>
-                    <div id="bookingMessage" class="booking-status"></div>
-                </div>
-                ${storedOrderId ? `
-                <div class="cancel-section">
-                    <p>You have a booking for this package (Order ID: ${escapeHTML(storedOrderId)}).</p>
-                    <button id="cancelButton">Cancel this booking</button>
-                    <div id="cancelMessage" class="booking-status"></div>
-                </div>
-                ` : ''}
-                <div class="reviews">
-                    <h3>Reviews</h3>
-                    ${pkg.reviews && pkg.reviews.length ? pkg.reviews.map(r => `
-                        <div class="review">
-                            <strong>Rating: ${r.rating}/5</strong> - ${r.date}<br>${escapeHTML(r.comment)}
+                    <div class="card-content">
+                        <div class="card-type-row">
+                            <span>${escapeHTML(pkg.type || "Package")} Package</span>
                         </div>
-                    `).join('') : "<p>No reviews yet.</p>"}
-                </div>
+                        <h3 class="card-title">${escapeHTML(pkg.name || "Unnamed package")}</h3>
+                        <div class="card-location">${escapeHTML(location || "Destination not listed")}</div>
+                        <div class="card-rating">
+                            <div class="rating-score">--</div>
+                            <div class="rating-text">
+                                <span class="rating-word">Loading...</span>
+                                <span class="rating-count"></span>
+                            </div>
+                        </div>
+                        <div class="card-distance">${escapeHTML(durationText)}</div>
+                        <div class="card-price-row">
+                            Starting from <span class="card-price">ZAR ${formatPrice(pkg.pricePerPerson)}</span>
+                        </div>
+                    </div>
+                </a>
             </div>
         `;
-        container.innerHTML = html;
+    }
 
-        // ---- BOOKING ----
-        var bookBtn = document.getElementById("bookButton");
-        var tripSelect = document.getElementById("tripSelect");
-        var travellerInput = document.getElementById("travellerCount");
-        var bookingMsg = document.getElementById("bookingMessage");
+    function updateCardRating(card, reviews) {
+        var ratingInfo = computeAverageRating(reviews);
+        var ratingScoreSpan = card.querySelector(".rating-score");
+        var ratingWordSpan = card.querySelector(".rating-word");
+        var ratingCountSpan = card.querySelector(".rating-count");
 
-        if (bookBtn && tripSelect && travellerInput) {
-            bookBtn.addEventListener("click", function() {
-                var tripId = tripSelect.value;
-                var num = parseInt(travellerInput.value, 10);
-                if (!tripId) {
-                    bookingMsg.textContent = "Please select a trip.";
-                    return;
-                }
-                if (isNaN(num) || num < 1) {
-                    bookingMsg.textContent = "Enter a valid number of travellers.";
-                    return;
-                }
-                bookBtn.disabled = true;
-                bookingMsg.textContent = "Processing booking...";
-                TravelAPI.bookPackage(tripId, num, function(error, response) {
-                    if (error) {
-                        bookingMsg.textContent = error.message;
-                        bookBtn.disabled = false;
-                        return;
-                    }
-                    if (response.status === "success") {
-                        // Try to extract orderId from response (if server returns it)
-                        var orderId = response.data && response.data.orderId ? response.data.orderId : null;
-                        if (orderId) {
-                            storeOrderId(pkg.packageID, orderId);
-                            bookingMsg.textContent = "Booking successful! Order ID: " + orderId;
-                        } else {
-                            bookingMsg.textContent = response.data || "Booking created (no order ID returned – cancellation will not work).";
-                        }
-                        setTimeout(() => location.reload(), 1500);
-                    } else {
-                        bookingMsg.textContent = response.data || "Booking failed.";
-                    }
-                    bookBtn.disabled = false;
-                });
-            });
-        }
-
-        // ---- CANCELLATION ----
-        var cancelBtn = document.getElementById("cancelButton");
-        var cancelMsg = document.getElementById("cancelMessage");
-        if (cancelBtn && storedOrderId) {
-            cancelBtn.addEventListener("click", function() {
-                cancelBtn.disabled = true;
-                cancelMsg.textContent = "Cancelling...";
-                TravelAPI.cancelBooking(storedOrderId, function(error, response) {
-                    if (error) {
-                        cancelMsg.textContent = error.message;
-                        cancelBtn.disabled = false;
-                        return;
-                    }
-                    if (response.status === "success") {
-                        removeStoredOrderId(pkg.packageID);
-                        cancelMsg.textContent = "Booking cancelled successfully.";
-                        setTimeout(() => location.reload(), 1500);
-                    } else {
-                        cancelMsg.textContent = response.data || "Cancellation failed.";
-                        cancelBtn.disabled = false;
-                    }
-                });
-            });
+        if (ratingInfo) {
+            ratingScoreSpan.textContent = ratingInfo.avg;
+            ratingWordSpan.textContent = ratingWordFromScore(ratingInfo.avg);
+            ratingCountSpan.textContent = ratingInfo.count + " reviews";
+        } else {
+            ratingWordSpan.textContent = "No reviews";
+            ratingCountSpan.textContent = "";
+            ratingScoreSpan.textContent = "--";
         }
     }
 
-    function loadPackage() {
-        var apiKey = TravelAPI.getApiKey();
-        if (!apiKey) {
-            setMessage("Please log in first.", true);
+    function enrichCardsWithRatings(packages, cards) {
+        for (var i = 0; i < packages.length; i++) {
+            var pkg = packages[i];
+            var card = cards[i];
+            (function (pkgId, cardElement) {
+                TravelAPI.getPackage(pkgId, function (err, response) {
+                    if (err || response.status !== "success") return;
+                    var reviews = response.data.reviews || [];
+                    updateCardRating(cardElement, reviews);
+                });
+            })(pkg.packageID, card);
+        }
+    }
+
+    function renderPackagesList(packages) {
+        if (!packages || packages.length === 0) {
+            grid.innerHTML = '<div class="empty-state">No packages were found in the database.</div>';
             return;
         }
+        grid.innerHTML = packages.map(renderPackageCard).join("");
+        var cards = grid.querySelectorAll(".package-card");
+        enrichCardsWithRatings(packages, cards);
+    }
 
-        var urlParams = new URLSearchParams(window.location.search);
-        var packageId = urlParams.get("id") || 1;
+    function loadPackagesList() {
+        if (!requireLogin()) return;
+        setMessage("Loading packages from the database...", false);
+        grid.innerHTML = '<div class="loading">Loading packages...</div>';
 
-        setMessage("Loading package...", false);
-        container.innerHTML = "<div class='loading'>Loading package details...</div>";
-
-        TravelAPI.getPackage(packageId, function(error, response) {
+        TravelAPI.getAllPackages(function (error, response) {
             if (error) {
                 setMessage(error.message, true);
+                grid.innerHTML = "";
                 return;
             }
             if (response.status !== "success") {
-                setMessage(response.data || "Failed to load package", true);
+                setMessage(response.data || "Failed to load packages.", true);
+                grid.innerHTML = "";
                 return;
             }
+            var allPackages = Array.isArray(response.data) ? response.data : [];
             setMessage("", false);
-            var pkg = response.data;
-            var storedOrderId = getStoredOrderId(pkg.packageID);
-            renderPackage(pkg, storedOrderId);
+            renderPackagesList(allPackages);
         });
     }
 
-    loadPackage();
+    loadPackagesList();
 });
