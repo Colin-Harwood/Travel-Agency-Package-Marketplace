@@ -60,101 +60,147 @@ class Database {
     }
 
     function getAllPackages($data) {
-        
+        try {
+            // fetch main package and agency first
+            $sqlMain = "
+                SELECT 
+                    p.packageID, p.name, p.type, p.description, p.pricePerPerson, p.duration, p.status,
+                    d.city AS destinationCity, d.country AS destinationCountry,
+                    ta.name AS agencyName, u.emailAddress AS email, u.phoneNumber AS phone,
+                    ta.street, ta.city AS agencyCity
+                FROM PACKAGE p
+                JOIN DESTINATION d ON p.destinationID = d.destinationID
+                JOIN TRAVEL_AGENCY ta ON p.agencyID = ta.userID
+                JOIN USER u ON ta.userID = u.userID
+            ";
+
+            $stmt = $this->conn->prepare($sqlMain);
+            $stmt->execute();
+            
+            $result = $stmt->get_result();
+            $package = [];
+            
+            while ($row = $result->fetch_assoc()) {
+                $package[] = $row;
+            }
+
+            $stmt->close();
+
+            if (!$package) {
+                $this->sendResponse("error", "Package not found or inactive", 404);
+            }
+
+            // // format agency details into nested json format
+            // $package['agencyDetails'] = [
+            //     'agencyName' => $package['agencyName'],
+            //     'email'      => $package['email'],
+            //     'phone'      => $package['phone'],
+            //     'street'     => $package['street'],
+            //     'city'       => $package['agencyCity']
+            // ];
+
+            // // Clean up the flat keys
+            // unset($package['agencyName'], $package['email'], $package['phone'], $package['street'], $package['agencyCity']);
+
+            $this->sendResponse("success", $package, 200);
+        } catch (mysqli_sql_exception $e) {
+            error_log("DB Error fetching package: " . $e->getMessage());
+            $this->sendResponse("error", "Failed to retrieve package details. MySQLi exception thrown in getPackage", 500);
+        }
     }
 
     public function getPackage($data) {
         if (!isset($data->packageId)) {
-            return $this->sendResponse("error", "Missing package id field", 400);
+            $this->sendResponse("error", "Missing package id field", 400);
         }
 
-        // long sql to get everything aout the package
-        // use arrayagg to stop cartesian products and duplicate data
-        $sql = "
-            SELECT 
-                p.packageID, p.name, p.type, p.description, p.pricePerPerson, p.duration, p.status,
-                d.city AS destinationCity, d.country AS destinationCountry,
-                
-                JSON_OBJECT(
-                    'agencyName', ta.name,
-                    'email', u.emailAddress,
-                    'phone', u.phoneNumber,
-                    'street', ta.street,
-                    'city', ta.city
-                ) AS agencyDetails,
-
-                (SELECT JSON_ARRAYAGG(JSON_OBJECT('rating', r.starRating, 'comment', r.comment, 'date', r.reviewDate)) 
-                FROM REVIEW r WHERE r.packageID = p.packageID) AS reviews,
-
-                (SELECT JSON_ARRAYAGG(JSON_OBJECT('airline', f.airline, 'flightNumber', f.flightNumber, 'departure', f.departureTime, 'arrival', f.arrivalTime, 'price', f.price)) 
-                FROM PACKAGE_FLIGHT pf 
-                JOIN FLIGHT f ON pf.flightID = f.flightID 
-                WHERE pf.packageID = p.packageID) AS flights,
-
-                (SELECT JSON_ARRAYAGG(JSON_OBJECT('name', a.name, 'type', a.type, 'rating', a.rating, 'pricePerNight', a.pricePerNight)) 
-                FROM PACKAGE_ACCOMMODATION pa 
-                JOIN ACCOMMODATION a ON pa.accommodationID = a.accommodationID 
-                WHERE pa.packageID = p.packageID) AS accommodations,
-
-                (SELECT JSON_ARRAYAGG(JSON_OBJECT('name', rest.name, 'cuisine', rest.cuisine, 'priceRange', rest.priceRange)) 
-                FROM PACKAGE_RESTAURANT pr 
-                JOIN RESTAURANT rest ON pr.restaurantID = rest.restaurantID 
-                WHERE pr.packageID = p.packageID) AS restaurants,
-
-                (SELECT JSON_ARRAYAGG(JSON_OBJECT('name', attr.name, 'entryFee', attr.entryFee)) 
-                FROM PACKAGE_ATTRACTION pat 
-                JOIN ATTRACTION attr ON pat.destinationID = attr.destinationID AND pat.name = attr.name 
-                WHERE pat.packageID = p.packageID) AS attractions,
-
-                COALESCE(
-                    (SELECT JSON_ARRAYAGG(JSON_OBJECT(
-                        'tripID', gt.tripID, 
-                        'tripDate', gt.tripDate, 
-                        'maxSize', gt.maxSize, 
-                        'currentSize', gt.currentSize,
-                        'spotsRemaining', CAST((gt.maxSize - gt.currentSize) AS SIGNED)
-                    )) 
-                    FROM GROUP_TRIP gt 
-                    WHERE gt.packageID = p.packageID AND gt.tripDate >= CURDATE()), 
-                    '[]'
-                ) AS upcomingGroupTrips
-
-            FROM PACKAGE p
-            JOIN DESTINATION d ON p.destinationID = d.destinationID
-            JOIN TRAVEL_AGENCY ta ON p.agencyID = ta.userID
-            JOIN USER u ON ta.userID = u.userID
-            WHERE p.packageID = ? 
-        ";
-
         try {
-            $stmt = $this->conn->prepare($sql);
-            
-            // bind and run
+            // fetch main package and agency first
+            $sqlMain = "
+                SELECT 
+                    p.packageID, p.name, p.type, p.description, p.pricePerPerson, p.duration, p.status,
+                    d.city AS destinationCity, d.country AS destinationCountry,
+                    ta.name AS agencyName, u.emailAddress AS email, u.phoneNumber AS phone,
+                    ta.street, ta.city AS agencyCity
+                FROM PACKAGE p
+                JOIN DESTINATION d ON p.destinationID = d.destinationID
+                JOIN TRAVEL_AGENCY ta ON p.agencyID = ta.userID
+                JOIN USER u ON ta.userID = u.userID
+                WHERE p.packageID = ?
+            ";
+
+            $stmt = $this->conn->prepare($sqlMain);
             $stmt->bind_param("i", $data->packageId); 
             $stmt->execute();
             
-            // get the results
             $result = $stmt->get_result();
             $package = $result->fetch_assoc();
+            $stmt->close();
 
             if (!$package) {
-                return $this->sendResponse("error", "Package not found or inactive", 404);
+                $this->sendResponse("error", "Package not found or inactive", 404);
             }
 
-            // decode json
-            // agg gives json strings
-            $jsonColumns = ['agencyDetails', 'reviews', 'flights', 'accommodations', 'restaurants', 'attractions', 'upcomingGroupTrips'];
-            foreach ($jsonColumns as $col) {
-                if (isset($package[$col])) {
-                    $package[$col] = json_decode($package[$col], true);
-                }
+            // format agency details into nested json format
+            $package['agencyDetails'] = [
+                'agencyName' => $package['agencyName'],
+                'email'      => $package['email'],
+                'phone'      => $package['phone'],
+                'street'     => $package['street'],
+                'city'       => $package['agencyCity']
+            ];
+
+            // Clean up the flat keys
+            unset($package['agencyName'], $package['email'], $package['phone'], $package['street'], $package['agencyCity']);
+
+            // get sub data for the package view page
+            $relatedQueries = [
+                'reviews' => "
+                    SELECT starRating AS rating, comment, reviewDate AS date 
+                    FROM REVIEW WHERE packageID = ?",
+                
+                'flights' => "
+                    SELECT f.airline, f.flightNumber, f.departureTime AS departure, f.arrivalTime AS arrival, f.price 
+                    FROM PACKAGE_FLIGHT pf 
+                    JOIN FLIGHT f ON pf.flightID = f.flightID WHERE pf.packageID = ?",
+                
+                'accommodations' => "
+                    SELECT a.name, a.type, a.rating, a.pricePerNight 
+                    FROM PACKAGE_ACCOMMODATION pa 
+                    JOIN ACCOMMODATION a ON pa.accommodationID = a.accommodationID WHERE pa.packageID = ?",
+                
+                'restaurants' => "
+                    SELECT rest.name, rest.cuisine, rest.priceRange 
+                    FROM PACKAGE_RESTAURANT pr 
+                    JOIN RESTAURANT rest ON pr.restaurantID = rest.restaurantID WHERE pr.packageID = ?",
+                
+                'attractions' => "
+                    SELECT attr.name, attr.entryFee 
+                    FROM PACKAGE_ATTRACTION pat 
+                    JOIN ATTRACTION attr ON pat.destinationID = attr.destinationID AND pat.name = attr.name WHERE pat.packageID = ?",
+                
+                'upcomingGroupTrips' => "
+                    SELECT tripID, tripDate, maxSize, currentSize, CAST((maxSize - currentSize) AS SIGNED) AS spotsRemaining 
+                    FROM GROUP_TRIP WHERE packageID = ? AND tripDate >= CURDATE()"
+            ];
+
+            // loop through and attach to the main package
+            foreach ($relatedQueries as $key => $query) {
+                $stmt = $this->conn->prepare($query);
+                $stmt->bind_param("i", $data->packageId);
+                $stmt->execute();
+                
+                $res = $stmt->get_result();
+                // use fetch all to automatically create the arrays
+                $package[$key] = $res->fetch_all(MYSQLI_ASSOC); 
+                $stmt->close();
             }
 
-            return $this->sendResponse("success", $package, 200);
+            $this->sendResponse("success", $package, 200);
 
         } catch (mysqli_sql_exception $e) { 
             error_log("DB Error fetching package: " . $e->getMessage());
-            return $this->sendResponse("error", "Failed to retrieve package details. MysQLi exception thrown in getPackage", 500);
+            $this->sendResponse("error", "Failed to retrieve package details. MySQLi exception thrown in getPackage", 500);
         }
     }
 
@@ -263,7 +309,7 @@ class Database {
     public function cancelBooking($data) {
         // make sure the orderId is sent
         if (!isset($data->orderId)) {
-            return $this->sendResponse("error", "Missing required cancellation details", 400);
+            $this->sendResponse("error", "Missing required cancellation details", 400);
         }
 
         $stmt = $this->conn->prepare("SELECT * from user where apiKey = ?");
@@ -322,14 +368,14 @@ class Database {
 
             // commit the transaction
             $this->conn->commit();
-            return $this->sendResponse("success", "Booking successfully cancelled and spots freed up", 200);
+            $this->sendResponse("success", "Booking successfully cancelled and spots freed up", 200);
 
         } catch (Exception $e) {
             // rollback transaction if mess up
             $this->conn->rollback();
             
             error_log("Cancellation Transaction Failed: " . $e->getMessage());
-            return $this->sendResponse("error", $e->getMessage(), 400);
+            $this->sendResponse("error", $e->getMessage(), 400);
         }
     }
 
