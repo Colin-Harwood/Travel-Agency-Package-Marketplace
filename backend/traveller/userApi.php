@@ -56,6 +56,16 @@ class Database {
             $this->cancelBooking($request_data);
         } elseif ($request_data->type === "getBookings") {
             $this->getBookings($request_data);
+        } elseif ($request_data->type === "getAllFlights") {
+            $this->getAllFlights($request_data);
+        } elseif ($request_data->type === "getAllAccommodations") {
+            $this->getAllAccomodations($request_data);
+        } elseif ($request_data->type === "getAllDestinations") {
+            $this->getAllDestinations($request_data);
+        } elseif ($request_data->type === "getAllAttractions") {
+            $this->getAllAttractions($request_data);
+        } elseif ($request_data->type === "getAllRestaurants") {
+            $this->getAllRestaurants($request_data);
         } else {
             $this->sendResponse("error", "Invalid request type", 400);
         }
@@ -500,8 +510,131 @@ class Database {
     public function getSingleBooking ($data) {
         $userID = $this->getUserID($data);
 
+        $this->sendResponse("success", "Api in progress", 400);
+
         try {
             $sql = "";
+        } catch (mysqli_sql_exception $e) {
+            $this->sendResponse("error", $e->getMessage(), 400);
+        }
+    }
+
+    public function getAllFlights($data) {
+        try {
+            $sql = "
+                SELECT * 
+                FROM flight
+                ORDER BY departureTime
+            ";
+
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            $flights = [];
+
+            while ($row = $result->fetch_assoc()) {
+                $flights[] = $row;
+            }
+
+            $this->sendResponse("success", $flights, 200);
+
+        } catch (mysqli_sql_exception $e) {
+            $this->sendResponse("error", $e->getMessage(), 400);
+        }
+    }
+
+    public function getAllRestaurants($data) {
+        try {
+            $sql = "
+                SELECT * 
+                FROM restaurant
+            ";
+
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            $resData = [];
+
+            while ($row = $result->fetch_assoc()) {
+                $resData[] = $row;
+            }
+
+            $this->sendResponse("success", $resData, 200);
+
+        } catch (mysqli_sql_exception $e) {
+            $this->sendResponse("error", $e->getMessage(), 400);
+        }
+    }
+
+    public function getAllDestinations($data) {
+        try {
+            $sql = "
+                SELECT * 
+                FROM destination
+            ";
+
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            $resData = [];
+
+            while ($row = $result->fetch_assoc()) {
+                $resData[] = $row;
+            }
+
+            $this->sendResponse("success", $resData, 200);
+
+        } catch (mysqli_sql_exception $e) {
+            $this->sendResponse("error", $e->getMessage(), 400);
+        }
+    }
+
+    public function getAllAccomodations($data) {
+        try {
+            $sql = "
+                SELECT * 
+                FROM accommodation
+            ";
+
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            $resData = [];
+
+            while ($row = $result->fetch_assoc()) {
+                $resData[] = $row;
+            }
+
+            $this->sendResponse("success", $resData, 200);
+
+        } catch (mysqli_sql_exception $e) {
+            $this->sendResponse("error", $e->getMessage(), 400);
+        }
+    }
+
+    public function getAllAttractions($data) {
+        try {
+            $sql = "
+                SELECT * 
+                FROM attraction
+            ";
+
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            $resData = [];
+
+            while ($row = $result->fetch_assoc()) {
+                $resData[] = $row;
+            }
+
+            $this->sendResponse("success", $resData, 200);
+
         } catch (mysqli_sql_exception $e) {
             $this->sendResponse("error", $e->getMessage(), 400);
         }
