@@ -124,3 +124,32 @@
   "type": "logout",
   "apiKey": "4353y7r22jwvbhvbyrwyg31t28728r9247r627"
 }
+
+----- TRAVELLER & AGENCY NEW EMAIL OR PASSWORD --------
+{
+  "type": "profileUpdate",
+  "apiKey": "CURRENT_USER_API_KEY",
+  "email": "newemail@example.com",
+  "password": "NewPassword123"
+}
+
+------SUCCESS
+{
+  "status": "success",
+  "timestamp": 1779135227,
+  "message": "profile updated successfully",
+  "data": {
+      "userID": 15,
+      "userType": "Traveller",
+      "apiKey": "NEWLY_GENERATED_API_KEY"
+  }
+}
+
+----FAILURE
+{
+    "status": "error",
+    "errorCode": 400,
+    "timestamp": 1779135227,
+    "message": "error message",
+    "data": null
+}
