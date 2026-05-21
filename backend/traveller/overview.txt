@@ -2,8 +2,6 @@
 
 #getSingleBooking
 
-#getSingleBooking
-
 #getFlights
 
 #getRestaurants
@@ -18,53 +16,95 @@ EVERY SINGLE REQUEST NEEDS THE TRAVELLERS API KEY
 
 ## getAllPackages
 
+# NOTE
+    Everything can be left blank like in the original eg
+        {
+            "type": "getAllPackages",
+            "apikey": "nQkleaCMsoTSDR7YOQ7BIP60ektVKshSS8GFfcBuqf91K8/R"   
+        }
+
+    And this returns the first 10 with package id and set to descending as filters, and no other filtering
+
 # Query
+
+# This is the query where everything is removed/not specified 
+# So for the integers leave them as 0s to get everything
+# And for the strings leave them empty and this will give everything
+# sortDirection default is descending
+# sortBy default is package id and can take
+    -price
+    -duration
+    -name
+    -LEAVE BLANK: packageId
+# limit default is 10
+# page default is 1 AND PAGES START AT 1
+
+# Destination:
+    Sorts for country or city
+
+# Pagination
+    Includes some response data about the number of items returned and page
+
 
 {
     "type": "getAllPackages",
-    "apikey": "nQkleaCMsoTSDR7YOQ7BIP60ektVKshSS8GFfcBuqf91K8/R"
+    "apikey": "nQkleaCMsoTSDR7YOQ7BIP60ektVKshSS8GFfcBuqf91K8/R",
+    "agencyName": "",
+    "destination": "",
+    "maxPrice": 0,
+    "duration": 0,
+    "sortBy": "",
+    "sortDirection": "",
+    "page": 2,
+    "limit": 2
 }
 
 #Response
 
 {
     "status": "success",
-    "timestamp": 1779262851,
-    "data": [
-        {
-            "packageID": 1,
-            "name": "Paris Classic Getaway",
-            "type": "Cultural",
-            "description": "Explore Parisian art, cuisine and iconic landmarks over 7 days.",
-            "pricePerPerson": "15000.00",
-            "duration": 7,
-            "status": "Active",
-            "destinationCity": "Paris",
-            "destinationCountry": "France",
-            "agencyName": "Sunrise Travels",
-            "email": "info@sunrisetravels.com",
-            "phone": "+27115550001",
-            "street": "12 Sun Street",
-            "agencyCity": "Johannesburg"
-        },
-        {
-            "packageID": 3,
-            "name": "Tokyo City Explorer",
-            "type": "Adventure",
-            "description": "Discover the electric streets and culture of Tokyo in 8 days.",
-            "pricePerPerson": "18000.00",
-            "duration": 8,
-            "status": "Active",
-            "destinationCity": "Tokyo",
-            "destinationCountry": "Japan",
-            "agencyName": "Sunrise Travels",
-            "email": "info@sunrisetravels.com",
-            "phone": "+27115550001",
-            "street": "12 Sun Street",
-            "agencyCity": "Johannesburg"
-        },
-        ...
-    ]
+    "timestamp": 1779368755,
+    "data": {
+        "data": [
+            {
+                "packageID": 49,
+                "name": "Cairo and Luxor Combined",
+                "type": "Cultural",
+                "description": "Explore Cairo and journey south to the temples of Luxor.",
+                "pricePerPerson": "29000.00",
+                "duration": 12,
+                "status": "Active",
+                "destinationCity": "Cairo",
+                "destinationCountry": "Egypt",
+                "agencyName": "Sunrise Travels",
+                "email": "info@sunrisetravels.com",
+                "phone": "+27115550001",
+                "street": "12 Sun Street",
+                "agencyCity": "Johannesburg"
+            },
+            {
+                "packageID": 48,
+                "name": "Dubai Shopping Festival Tour",
+                "type": "City",
+                "description": "Timed with the Dubai Shopping Festival for the ultimate retail trip.",
+                "pricePerPerson": "21000.00",
+                "duration": 7,
+                "status": "Draft",
+                "destinationCity": "Dubai",
+                "destinationCountry": "UAE",
+                "agencyName": "Epic Voyages",
+                "email": "info@epicvoyages.com",
+                "phone": "+27115550003",
+                "street": "7 Adventure Road",
+                "agencyCity": "Pretoria"
+            }
+        ],
+        "pagination": {
+            "currentPage": 2,
+            "perPage": 2,
+            "count": 2
+        }
+    }
 }
 
 ## getPackage
@@ -324,5 +364,179 @@ ARRAYS:reviews, flights, accomodations, restaurants, accomodations, upcomingGrou
             "destinationID": 5,
             "agencyID": 13
         }
+    ]
+}
+
+
+## ALL BASIC GETS LIKE FLIGHT ACCOMMODATION etc
+
+# ALL OF THESE ONLY TAKE THE TYPE AND APIKEY AND RETURN EVERYTHING FOR THAT TABLE
+
+## getAllFlights
+
+# Query
+
+{
+    "type": "getAllFlights",
+    "apikey": "nQkleaCMsoTSDR7YOQ7BIP60ektVKshSS8GFfcBuqf91K8/R"
+}
+
+#Response
+
+{
+    "status": "success",
+    "timestamp": 1779370878,
+    "data": [
+        {
+            "flightID": 1,
+            "airline": "Air France",
+            "flightNumber": "AF101",
+            "departureAirport": "OR Tambo International",
+            "arrivalAirport": "Charles de Gaulle",
+            "departureTime": "2026-07-01 08:00:00",
+            "arrivalTime": "2026-07-01 18:00:00",
+            "price": "12000.00"
+        },
+        {
+            "flightID": 2,
+            "airline": "Japan Airlines",
+            "flightNumber": "JL302",
+            "departureAirport": "OR Tambo International",
+            "arrivalAirport": "Narita International",
+            "departureTime": "2026-07-03 10:00:00",
+            "arrivalTime": "2026-07-04 06:00:00",
+            "price": "14000.00"
+        },
+    ...
+    ]
+}
+
+## getAllAccommodations
+
+# Query
+
+{
+    "type": "getAllAccommodations",
+    "apikey": "nQkleaCMsoTSDR7YOQ7BIP60ektVKshSS8GFfcBuqf91K8/R"
+}
+
+# Response
+
+{
+    "status": "success",
+    "timestamp": 1779371291,
+    "data": [
+        {
+            "accommodationID": 1,
+            "name": "Hotel Le Marais",
+            "type": "Hotel",
+            "rating": "4.5",
+            "pricePerNight": "3500.00",
+            "destinationID": 1
+        },
+        {
+            "accommodationID": 2,
+            "name": "Generator Paris",
+            "type": "Hostel",
+            "rating": "3.8",
+            "pricePerNight": "800.00",
+            "destinationID": 1
+        },
+        ...
+    ]
+}
+
+## getAllDestinations
+
+# Query
+
+{
+    "type": "getAllDestinations",
+    "apikey": "nQkleaCMsoTSDR7YOQ7BIP60ektVKshSS8GFfcBuqf91K8/R"
+}
+
+# Response
+
+{
+    "status": "success",
+    "timestamp": 1779371628,
+    "data": [
+        {
+            "destinationID": 1,
+            "country": "France",
+            "city": "Paris",
+            "description": "The city of light, famous for the Eiffel Tower and haute cuisine."
+        },
+        {
+            "destinationID": 2,
+            "country": "Japan",
+            "city": "Tokyo",
+            "description": "A vibrant metropolis blending ultramodern and traditional culture."
+        },
+        ...
+    ]
+}
+
+## getAllAttractions
+
+# Query
+
+{
+    "type": "getAllAttractions",
+    "apikey": "nQkleaCMsoTSDR7YOQ7BIP60ektVKshSS8GFfcBuqf91K8/R"
+}
+
+# Response
+
+{
+    "status": "success",
+    "timestamp": 1779371707,
+    "data": [
+        {
+            "name": "Eiffel Tower",
+            "entryFee": "26.00",
+            "description": "Iconic iron lattice tower on the Champ de Mars.",
+            "destinationID": 1
+        },
+        {
+            "name": "Louvre Museum",
+            "entryFee": "17.00",
+            "description": "The worlds largest art museum, housing the Mona Lisa.",
+            "destinationID": 1
+        },
+        ...
+    ]
+}
+
+## getAllRestaurants
+
+# Query
+
+{
+    "type": "getAllRestaurants",
+    "apikey": "nQkleaCMsoTSDR7YOQ7BIP60ektVKshSS8GFfcBuqf91K8/R"
+}
+
+# Response
+
+{
+    "status": "success",
+    "timestamp": 1779371763,
+    "data": [
+        {
+            "restaurantID": 1,
+            "name": "Le Cinq",
+            "priceRange": "$$$$",
+            "cuisine": "French",
+            "destinationID": 1
+        },
+        {
+            "restaurantID": 2,
+            "name": "Septime",
+            "priceRange": "$$$",
+            "cuisine": "Modern French",
+            "destinationID": 1
+        },
+        ...
     ]
 }

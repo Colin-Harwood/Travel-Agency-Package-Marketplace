@@ -56,6 +56,16 @@ class Database {
             $this->cancelBooking($request_data);
         } elseif ($request_data->type === "getBookings") {
             $this->getBookings($request_data);
+        } elseif ($request_data->type === "getAllFlights") {
+            $this->getAllFlights($request_data);
+        } elseif ($request_data->type === "getAllAccommodations") {
+            $this->getAllAccomodations($request_data);
+        } elseif ($request_data->type === "getAllDestinations") {
+            $this->getAllDestinations($request_data);
+        } elseif ($request_data->type === "getAllAttractions") {
+            $this->getAllAttractions($request_data);
+        } elseif ($request_data->type === "getAllRestaurants") {
+            $this->getAllRestaurants($request_data);
         } else {
             $this->sendResponse("error", "Invalid request type", 400);
         }
@@ -63,7 +73,7 @@ class Database {
 
     function getAllPackages($data) {
         try {
-            // fetch main package and agency first
+            // base queuery and usiny 1=1 so the appending is easier
             $sqlMain = "
                 SELECT 
                     p.packageID, p.name, p.type, p.description, p.pricePerPerson, p.duration, p.status,
@@ -74,40 +84,129 @@ class Database {
                 JOIN DESTINATION d ON p.destinationID = d.destinationID
                 JOIN TRAVEL_AGENCY ta ON p.agencyID = ta.userID
                 JOIN USER u ON ta.userID = u.userID
+                WHERE 1=1
             ";
 
+            $conditions = [];
+            $params = [];
+            $types = "";
+
+            // add the filters in dynamically if the frontend sent the field
+            if (!empty($data->agencyName) && trim($data->agencyName) !== "") {
+                $conditions[] = "ta.name LIKE ?";
+                $params[] = "%" . $data->agencyName . "%";
+                $types .= "s";
+            }
+
+            if (!empty($data->destination) && trim($data->destination) !== "") {
+                $conditions[] = "(d.city LIKE ? OR d.country LIKE ?)";
+                $params[] = "%" . $data->destination . "%";
+                $params[] = "%" . $data->destination . "%";
+                $types .= "ss";
+            }
+
+            if (!empty($data->maxPrice) && $data->maxPrice !== 0) {
+                $conditions[] = "p.pricePerPerson <= ?";
+                $params[] = $data->maxPrice;
+                $types .= "d";
+            }
+
+            if (!empty($data->duration) && $data->duration !== 0) {
+                $conditions[] = "p.duration = ?";
+                $params[] = $data->duration;
+                $types .= "i";
+            }
+
+            if (count($conditions) > 0) {
+                $sqlMain .= " AND " . implode(" AND ", $conditions);
+            }
+
+            // for the three allowed sorting columns
+            $allowedSortColumns = [
+                'price'    => 'p.pricePerPerson',
+                'duration' => 'p.duration',
+                'name'     => 'p.name'
+            ];
+
+            // default sort column
+            $sortColumn = 'p.packageID'; 
+            if (!empty($data->sortBy) && array_key_exists($data->sortBy, $allowedSortColumns) && trim($data->sortDirection) !== "") {
+                $sortColumn = $allowedSortColumns[$data->sortBy];
+            }
+
+            // default sort direction is DESC
+            $sortDirection = 'DESC'; 
+            if (!empty($data->sortDirection) && trim($data->sortDirection) !== "") {
+                $dir = strtolower(trim($data->sortDirection));
+                if ($dir === 'ascending' || $dir === 'asc') {
+                    $sortDirection = 'ASC';
+                } elseif ($dir === 'descending' || $dir === 'desc') {
+                    $sortDirection = 'DESC';
+                }
+            }
+
+            $sqlMain .= " ORDER BY " . $sortColumn . " " . $sortDirection;
+
+            // for using pages
+            $page = isset($data->page) && $data->page > 0 ? (int)$data->page : 1;
+            $limit = isset($data->limit) && $data->limit > 0 ? (int)$data->limit : 10;
+            $offset = ($page - 1) * $limit;
+
+            $sqlMain .= " LIMIT ? OFFSET ?";
+            $params[] = $limit;
+            $params[] = $offset;
+            $types .= "ii"; 
+
+            // prepare and bind
             $stmt = $this->conn->prepare($sqlMain);
+
+            if (!empty($params)) {
+                $stmt->bind_param($types, ...$params);
+            }
+
             $stmt->execute();
-            
             $result = $stmt->get_result();
-            $package = [];
-            
+            $packages = [];
+
+            // fetch and format the results and put in array
             while ($row = $result->fetch_assoc()) {
-                $package[] = $row;
+                
+                // // nest the agency details
+                // $row['agencyDetails'] = [
+                //     'agencyName' => $row['agencyName'],
+                //     'email'      => $row['email'],
+                //     'phone'      => $row['phone'],
+                //     'street'     => $row['street'],
+                //     'city'       => $row['agencyCity']
+                // ];
+
+                // unset($row['agencyName'], $row['email'], $row['phone'], $row['street'], $row['agencyCity']);
+
+                $packages[] = $row;
             }
 
             $stmt->close();
 
-            if (!$package) {
-                $this->sendResponse("error", "Package not found or inactive", 404);
+            if (empty($packages)) {
+                $this->sendResponse("error", "No packages found matching those criteria", 404);
+                return; 
             }
 
-            // // format agency details into nested json format
-            // $package['agencyDetails'] = [
-            //     'agencyName' => $package['agencyName'],
-            //     'email'      => $package['email'],
-            //     'phone'      => $package['phone'],
-            //     'street'     => $package['street'],
-            //     'city'       => $package['agencyCity']
-            // ];
+            // send back info to the front about the data
+            $responseData = [
+                'data' => $packages,
+                'pagination' => [
+                    'currentPage' => $page,
+                    'perPage'     => $limit,
+                    'count'       => count($packages)
+                ]
+            ];
 
-            // // Clean up the flat keys
-            // unset($package['agencyName'], $package['email'], $package['phone'], $package['street'], $package['agencyCity']);
+            $this->sendResponse("success", $responseData, 200);
 
-            $this->sendResponse("success", $package, 200);
         } catch (mysqli_sql_exception $e) {
-            error_log("DB Error fetching package: " . $e->getMessage());
-            $this->sendResponse("error", "Failed to retrieve package details. MySQLi exception thrown in getPackage", 500);
+            error_log("DB Error fetching packages: " . $e->getMessage());
+            $this->sendResponse("error", "Failed to retrieve packages.", 500);
         }
     }
 
@@ -403,6 +502,139 @@ class Database {
             }
 
             $this->sendResponse("success", $booking, 200);
+        } catch (mysqli_sql_exception $e) {
+            $this->sendResponse("error", $e->getMessage(), 400);
+        }
+    }
+
+    public function getSingleBooking ($data) {
+        $userID = $this->getUserID($data);
+
+        $this->sendResponse("success", "Api in progress", 400);
+
+        try {
+            $sql = "";
+        } catch (mysqli_sql_exception $e) {
+            $this->sendResponse("error", $e->getMessage(), 400);
+        }
+    }
+
+    public function getAllFlights($data) {
+        try {
+            $sql = "
+                SELECT * 
+                FROM flight
+                ORDER BY departureTime
+            ";
+
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            $flights = [];
+
+            while ($row = $result->fetch_assoc()) {
+                $flights[] = $row;
+            }
+
+            $this->sendResponse("success", $flights, 200);
+
+        } catch (mysqli_sql_exception $e) {
+            $this->sendResponse("error", $e->getMessage(), 400);
+        }
+    }
+
+    public function getAllRestaurants($data) {
+        try {
+            $sql = "
+                SELECT * 
+                FROM restaurant
+            ";
+
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            $resData = [];
+
+            while ($row = $result->fetch_assoc()) {
+                $resData[] = $row;
+            }
+
+            $this->sendResponse("success", $resData, 200);
+
+        } catch (mysqli_sql_exception $e) {
+            $this->sendResponse("error", $e->getMessage(), 400);
+        }
+    }
+
+    public function getAllDestinations($data) {
+        try {
+            $sql = "
+                SELECT * 
+                FROM destination
+            ";
+
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            $resData = [];
+
+            while ($row = $result->fetch_assoc()) {
+                $resData[] = $row;
+            }
+
+            $this->sendResponse("success", $resData, 200);
+
+        } catch (mysqli_sql_exception $e) {
+            $this->sendResponse("error", $e->getMessage(), 400);
+        }
+    }
+
+    public function getAllAccomodations($data) {
+        try {
+            $sql = "
+                SELECT * 
+                FROM accommodation
+            ";
+
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            $resData = [];
+
+            while ($row = $result->fetch_assoc()) {
+                $resData[] = $row;
+            }
+
+            $this->sendResponse("success", $resData, 200);
+
+        } catch (mysqli_sql_exception $e) {
+            $this->sendResponse("error", $e->getMessage(), 400);
+        }
+    }
+
+    public function getAllAttractions($data) {
+        try {
+            $sql = "
+                SELECT * 
+                FROM attraction
+            ";
+
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            $resData = [];
+
+            while ($row = $result->fetch_assoc()) {
+                $resData[] = $row;
+            }
+
+            $this->sendResponse("success", $resData, 200);
+
         } catch (mysqli_sql_exception $e) {
             $this->sendResponse("error", $e->getMessage(), 400);
         }
