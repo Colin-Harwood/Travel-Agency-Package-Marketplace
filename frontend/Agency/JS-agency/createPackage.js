@@ -74,7 +74,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 showMessage(data.data || "Could not create package.", "error");
                 return;
             }
-
+            // sending extra package info to their API's
             const packageID = data.data.packageID;
             const extraRequests = [];
 
@@ -150,12 +150,10 @@ document.addEventListener("DOMContentLoaded", function () {
             defaultOption.value = "";
             defaultOption.textContent = "Select destination";
             destinationSelect.appendChild(defaultOption);
-
             if (data.status !== "success" || !Array.isArray(data.data)) {
                 showMessage("Could not load destinations.", "error");
                 return;
             }
-
             data.data.forEach(function (destination) {
                 const option = document.createElement("option");
 
