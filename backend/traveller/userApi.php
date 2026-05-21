@@ -54,6 +54,8 @@ class Database {
             $this->bookPackage($request_data);
         } elseif ($request_data->type === "cancelBooking") {
             $this->cancelBooking($request_data);
+        } elseif ($request_data->type === "getBookings") {
+            $this->getBookings($request_data);
         } else {
             $this->sendResponse("error", "Invalid request type", 400);
         }
@@ -377,6 +379,46 @@ class Database {
             error_log("Cancellation Transaction Failed: " . $e->getMessage());
             $this->sendResponse("error", $e->getMessage(), 400);
         }
+    }
+
+    public function getBookings($data) {
+        $userID = $this->getUserID($data);
+
+        try {
+            $sqlQueuery = "
+                SELECT * FROM `order` AS o
+                JOIN package AS p ON o.packageID = p.packageID
+                WHERE o.userID = ?
+            ";
+
+            $stmt = $this->conn->prepare($sqlQueuery);
+            $stmt->bind_param("i", $userID);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            $booking = [];
+
+            while($row = $result->fetch_assoc()) {
+                $booking[] = $row;
+            }
+
+            $this->sendResponse("success", $booking, 200);
+        } catch (mysqli_sql_exception $e) {
+            $this->sendResponse("error", $e->getMessage(), 400);
+        }
+    }
+
+    private function getUserID($data) {
+        $stmt = $this->conn->prepare("SELECT userID from user where apiKey = ?");
+        $stmt->bind_param("s", $data->apikey);
+        $stmt->execute();
+
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+
+        $userID = $row["userID"];
+
+        return $userID;
     }
 
     private function sendResponse($status, $data, $http_code = 200) {
