@@ -66,6 +66,8 @@ class Database {
             $this->getAllAttractions($request_data);
         } elseif ($request_data->type === "getAllRestaurants") {
             $this->getAllRestaurants($request_data);
+        } elseif ($request_data->type === "makeReview") {
+            $this->makeReview($request_data);
         } else {
             $this->sendResponse("error", "Invalid request type", 400);
         }
@@ -636,6 +638,67 @@ class Database {
             $this->sendResponse("success", $resData, 200);
 
         } catch (mysqli_sql_exception $e) {
+            $this->sendResponse("error", $e->getMessage(), 400);
+        }
+    }
+
+    public function makeReview($data) {
+        try {
+            // front only needs to send three things
+            $req_fields = ["comment", "starRating", "packageID"];
+
+            foreach($req_fields as $val) {
+                if (!isset($data->$val)) {
+                    $this->sendResponse("error", "Missing field: " . $val . " in the request to makeReview", 400);
+                }
+            }
+
+            //ensure the starRating is in the correct range
+            if ($data->starRating < 1 || $data->starRating > 5) {
+                $this->sendResponse("error", "Star rating is not in the range of 1-5", 400);
+            }
+
+            $userID = $this->getUserID($data);
+
+            //getting the agencyID
+            $sqlAgencyID = "
+                SELECT agencyID
+                FROM package
+                WHERE packageID = ?
+            ";
+
+            $stmt = $this->conn->prepare($sqlAgencyID);
+            $stmt->bind_param("i", $data->packageID);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $stmt->close();
+
+            $agencyRow = $result->fetch_assoc();
+
+            //no packageId exists
+            if (!$agencyRow) {
+                $this->sendResponse("error", "Package not found", 404);
+                return;
+            }
+
+            //extract agencyId
+            $agencyID = $agencyRow['agencyID'];
+
+            //use sqls curdate as its easier
+            $insertSql = "
+                INSERT INTO review (comment, starRating, reviewDate, userID, packageID, agencyID)
+                VALUES (?, ?, CURDATE(), ?, ?, ?)
+            ";
+
+            $stmt = $this->conn->prepare($insertSql);
+            $stmt->bind_param("siiii", $data->comment, $data->starRating, $userID, $data->packageID, $agencyID);
+            $stmt->execute();
+            $stmt->close();
+
+            // it will automatically throw a sql exception if the insert fails so just just response
+            $this->sendResponse("Success", "Review created successfully", 200);
+
+        } catch(mysqli_sql_exception $e) {
             $this->sendResponse("error", $e->getMessage(), 400);
         }
     }

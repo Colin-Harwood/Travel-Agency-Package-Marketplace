@@ -2,14 +2,6 @@
 
 #getSingleBooking
 
-#getFlights
-
-#getRestaurants
-
-#getDestinations
-
-
-
 ### OVERVIEW
 
 EVERY SINGLE REQUEST NEEDS THE TRAVELLERS API KEY
@@ -539,4 +531,27 @@ ARRAYS:reviews, flights, accomodations, restaurants, accomodations, upcomingGrou
         },
         ...
     ]
+}
+
+## makeReview
+
+Star rating is an integer 1-5
+Only the comment, starRating and the packageID are required 
+
+# Query
+
+{
+    "type": "makeReview",
+    "apikey": "nQkleaCMsoTSDR7YOQ7BIP60ektVKshSS8GFfcBuqf91K8/R",
+    "comment": "testMessage",
+    "starRating": 3,
+    "packageID": 1
+}
+
+# Response
+
+{
+    "status": "Success",
+    "timestamp": 1779385708,
+    "data": "Review created successfully"
 }
