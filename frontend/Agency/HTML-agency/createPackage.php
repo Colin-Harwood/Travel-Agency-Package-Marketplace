@@ -1,5 +1,6 @@
 <?php
     require_once "layout.php";
+    protectAgencyPage(); // stop users from accessing this page if they are not logged in
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -51,12 +52,12 @@
 
                         <div class="form-group">
                             <label for="pricePerPerson">Price Per Person</label>
-                            <input type="number" id="pricePerPerson" name="pricePerPerson" placeholder="" step="0.01" min="0" required>
+                            <input type="number" id="pricePerPerson" name="pricePerPerson" step="0.01" min="0" required>
                         </div>
 
                         <div class="form-group">
                             <label for="duration">Duration Days</label>
-                            <input type="number" id="duration" name="duration" placeholder="" min="1" required>
+                            <input type="number" id="duration" name="duration" min="1" required>
                         </div>
 
                         <div class="form-group">
@@ -67,7 +68,8 @@
                                 <option value="Inactive">Inactive</option>
                             </select>
                         </div>
-                       <div class="form-group">
+
+                        <div class="form-group">
                             <label for="destinationID">Destination</label>
                             <select id="destinationID" name="destinationID" required>
                                 <option value="">Loading destinations...</option>
@@ -75,6 +77,7 @@
                         </div>
                     </div>
                 </div>
+
                 <div class="form-section">
                     <div class="section-header">
                         <input type="text" value="Package Description" readonly>
@@ -84,7 +87,7 @@
                     <div class="field-grid">
                         <div class="form-group full-width">
                             <label for="description">Description</label>
-                            <textarea id="description" name="description" placeholder="" required></textarea>
+                            <textarea id="description" name="description" required></textarea>
                         </div>
                     </div>
                 </div>
@@ -99,40 +102,28 @@
                         <div class="form-group">
                             <label for="flightID">Flight</label>
                             <select id="flightID" name="flightID">
-                                <option value="">None</option>
-                                <option value="1">Flight 1</option>
-                                <option value="2">Flight 2</option>
-                                <option value="3">Flight 3</option>
+                                <option value="">Loading flights...</option>
                             </select>
                         </div>
 
                         <div class="form-group">
                             <label for="accommodationID">Accommodation</label>
                             <select id="accommodationID" name="accommodationID">
-                                <option value="">None</option>
-                                <option value="1">Accommodation 1</option>
-                                <option value="2">Accommodation 2</option>
-                                <option value="3">Accommodation 3</option>
+                                <option value="">Loading accommodations...</option>
                             </select>
                         </div>
 
                         <div class="form-group">
                             <label for="restaurantID">Restaurant</label>
                             <select id="restaurantID" name="restaurantID">
-                                <option value="">None</option>
-                                <option value="1">Restaurant 1</option>
-                                <option value="2">Restaurant 2</option>
-                                <option value="3">Restaurant 3</option>
+                                <option value="">Loading restaurants...</option>
                             </select>
                         </div>
 
                         <div class="form-group">
                             <label for="attractionID">Attraction</label>
                             <select id="attractionID" name="attractionID">
-                                <option value="">None</option>
-                                <option value="1">Attraction 1</option>
-                                <option value="2">Attraction 2</option>
-                                <option value="3">Attraction 3</option>
+                                <option value="">Loading attractions...</option>
                             </select>
                         </div>
                     </div>

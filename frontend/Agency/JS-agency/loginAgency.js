@@ -36,8 +36,13 @@ document.getElementById("loginForm").addEventListener("submit", function (e) {
             localStorage.setItem("userID", data.data.userID);
             localStorage.setItem("userType", data.data.userType);
             localStorage.setItem("apiKey", data.data.apiKey);
+
+
+            document.cookie = "userID=" + data.data.userID + "; path=/";
+            document.cookie = "userType=" + data.data.userType + "; path=/";
+            document.cookie = "apiKey=" + data.data.apiKey + "; path=/";
             errorMsg.textContent = "Login successful.";
-            // window.location.href = "agencyHome.php";
+            window.location.href = "createPackage.php";
         } else {
             errorMsg.textContent = data.message;
         }

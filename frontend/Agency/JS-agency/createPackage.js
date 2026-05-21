@@ -3,9 +3,18 @@ const API_URL = "http://localhost/COS-221-PA5/Travel-Agency-Package-Marketplace/
 document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("createPackageForm");
     const messageBox = document.getElementById("messageBox");
+
     const destinationSelect = document.getElementById("destinationID");
+    const flightSelect = document.getElementById("flightID");
+    const accommodationSelect = document.getElementById("accommodationID");
+    const restaurantSelect = document.getElementById("restaurantID");
+    const attractionSelect = document.getElementById("attractionID");
 
     loadDestinations();
+    loadFlights();
+    loadAccommodations();
+    loadRestaurants();
+    loadAttractions();
 
     form.addEventListener("submit", function (event) {
         event.preventDefault();
@@ -32,14 +41,20 @@ document.addEventListener("DOMContentLoaded", function () {
             destinationID: parseInt(destinationSelect.value)
         };
 
-        const flightID = document.getElementById("flightID").value;
-        const accommodationID = document.getElementById("accommodationID").value;
-        const restaurantID = document.getElementById("restaurantID").value;
-        const attractionSelect = document.getElementById("attractionID");
-        const attractionID = attractionSelect.value;
-        const attractionName = attractionSelect.options[attractionSelect.selectedIndex].text;
+        const flightID = flightSelect.value;
+        const accommodationID = accommodationSelect.value;
+        const restaurantID = restaurantSelect.value;
+        const attractionValue = attractionSelect.value;
 
-        if (packageData.name === "" || packageData.packageType === "" || packageData.description === "" || packageData.status === "" || isNaN(packageData.pricePerPerson) || isNaN(packageData.duration) || isNaN(packageData.destinationID)) {
+        if (
+            packageData.name === "" ||
+            packageData.packageType === "" ||
+            packageData.description === "" ||
+            packageData.status === "" ||
+            isNaN(packageData.pricePerPerson) ||
+            isNaN(packageData.duration) ||
+            isNaN(packageData.destinationID)
+        ) {
             showMessage("Please fill in all fields correctly.", "error");
             return;
         }
@@ -74,7 +89,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 showMessage(data.data || "Could not create package.", "error");
                 return;
             }
-            // sending extra package info to their API's
+
             const packageID = data.data.packageID;
             const extraRequests = [];
 
@@ -102,11 +117,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 }));
             }
 
-            if (attractionID !== "") {
+            if (attractionValue !== "") {
+                const attractionParts = attractionValue.split("|");
+                const attractionDestinationID = parseInt(attractionParts[0]);
+                const attractionName = attractionParts[1];
+
                 extraRequests.push(sendExtraRequest({
                     action: "add_attraction",
                     packageID: parseInt(packageID),
-                    destinationID: parseInt(packageData.destinationID),
+                    destinationID: attractionDestinationID,
                     name: attractionName
                 }));
             }
@@ -115,7 +134,12 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(function () {
                 showMessage(data.data.message + " Package ID: " + packageID, "success");
                 form.reset();
+
                 loadDestinations();
+                loadFlights();
+                loadAccommodations();
+                loadRestaurants();
+                loadAttractions();
             })
             .catch(function (error) {
                 console.error("Extra package item error:", error);
@@ -129,7 +153,92 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     function loadDestinations() {
-        destinationSelect.innerHTML = "<option value=''>Loading destinations...</option>";
+        loadSelectOptions({
+            selectElement: destinationSelect,
+            action: "get_destinations",
+            defaultText: "Select destination",
+            loadingText: "Loading destinations...",
+            errorText: "Could not load destinations",
+            getValue: function (destination) {
+                return destination.destinationID;
+            },
+            getText: function (destination) {
+                return destination.city + ", " + destination.country;
+            }
+        });
+    }
+
+    function loadFlights() {
+        loadSelectOptions({
+            selectElement: flightSelect,
+            action: "get_flights",
+            defaultText: "None",
+            loadingText: "Loading flights...",
+            errorText: "Could not load flights",
+            getValue: function (flight) {
+                return flight.flightID;
+            },
+            getText: function (flight) {
+                return flight.flightNumber;
+            }
+        });
+    }
+
+    function loadAccommodations() {
+        loadSelectOptions({
+            selectElement: accommodationSelect,
+            action: "get_accommodations",
+            defaultText: "None",
+            loadingText: "Loading accommodations...",
+            errorText: "Could not load accommodations",
+            getValue: function (accommodation) {
+                return accommodation.accommodationID;
+            },
+            getText: function (accommodation) {
+                return accommodation.name;
+            }
+        });
+    }
+
+    function loadRestaurants() {
+        loadSelectOptions({
+            selectElement: restaurantSelect,
+            action: "get_restaurants",
+            defaultText: "None",
+            loadingText: "Loading restaurants...",
+            errorText: "Could not load restaurants",
+            getValue: function (restaurant) {
+                return restaurant.restaurantID;
+            },
+            getText: function (restaurant) {
+                return restaurant.name;
+            }
+        });
+    }
+
+    function loadAttractions() {
+        loadSelectOptions({
+            selectElement: attractionSelect,
+            action: "get_attractions",
+            defaultText: "None",
+            loadingText: "Loading attractions...",
+            errorText: "Could not load attractions",
+            getValue: function (attraction) {
+                return attraction.destinationID + "|" + attraction.name;
+            },
+            getText: function (attraction) {
+                return attraction.name;
+            }
+        });
+    }
+
+    function loadSelectOptions(config) {
+        config.selectElement.innerHTML = "";
+
+        const loadingOption = document.createElement("option");
+        loadingOption.value = "";
+        loadingOption.textContent = config.loadingText;
+        config.selectElement.appendChild(loadingOption);
 
         fetch(API_URL, {
             method: "POST",
@@ -137,36 +246,45 @@ document.addEventListener("DOMContentLoaded", function () {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                action: "get_destinations"
+                action: config.action
             })
         })
         .then(function (response) {
             return response.json();
         })
         .then(function (data) {
-            destinationSelect.innerHTML = "";
+            config.selectElement.innerHTML = "";
 
             const defaultOption = document.createElement("option");
             defaultOption.value = "";
-            defaultOption.textContent = "Select destination";
-            destinationSelect.appendChild(defaultOption);
+            defaultOption.textContent = config.defaultText;
+            config.selectElement.appendChild(defaultOption);
+
             if (data.status !== "success" || !Array.isArray(data.data)) {
-                showMessage("Could not load destinations.", "error");
+                showMessage(config.errorText + ".", "error");
                 return;
             }
-            data.data.forEach(function (destination) {
+
+            data.data.forEach(function (item) {
                 const option = document.createElement("option");
 
-                option.value = destination.destinationID;
-                option.textContent = destination.city + ", " + destination.country;
+                option.value = config.getValue(item);
+                option.textContent = config.getText(item);
 
-                destinationSelect.appendChild(option);
+                config.selectElement.appendChild(option);
             });
         })
         .catch(function (error) {
-            console.error("Get destinations error:", error);
-            destinationSelect.innerHTML = "<option value=''>Could not load destinations</option>";
-            showMessage("Could not load destinations.", "error");
+            console.error(config.action + " error:", error);
+
+            config.selectElement.innerHTML = "";
+
+            const errorOption = document.createElement("option");
+            errorOption.value = "";
+            errorOption.textContent = config.errorText;
+            config.selectElement.appendChild(errorOption);
+
+            showMessage(config.errorText + ".", "error");
         });
     }
 
