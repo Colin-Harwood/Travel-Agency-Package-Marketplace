@@ -56,6 +56,8 @@ class Database {
             $this->cancelBooking($request_data);
         } elseif ($request_data->type === "getBookings") {
             $this->getBookings($request_data);
+        } elseif ($request_data->type === "getSingleBooking") {
+            $this->getSingleBooking($request_data);
         } elseif ($request_data->type === "getAllFlights") {
             $this->getAllFlights($request_data);
         } elseif ($request_data->type === "getAllAccommodations") {
@@ -68,7 +70,7 @@ class Database {
             $this->getAllRestaurants($request_data);
         } elseif ($request_data->type === "makeReview") {
             $this->makeReview($request_data);
-        } else {
+        }  else {
             $this->sendResponse("error", "Invalid request type", 400);
         }
     }
@@ -510,12 +512,41 @@ class Database {
     }
 
     public function getSingleBooking ($data) {
-        $userID = $this->getUserID($data);
-
-        $this->sendResponse("success", "Api in progress", 400);
-
         try {
-            $sql = "";
+
+            if (!isset($data->orderID)) {
+                $this->sendResponse("error", "No field orderID was found", 400);
+            }
+            // check to make sure the client is requesting their booking info
+            // otherwise any logged in user can see any booking by querying the api
+            $userID = $this->getUserID($data);
+            
+            //keep the columns i wanted before i realised not needed. leaving here incase i want them later
+            // o.orderID, o.startDate, o.numTravellers, o.status, o.totalPrice, o.packageID, p.type, p.name, p.description, p.pricePerPerson
+            $sql = "
+                SELECT *
+                FROM `order` AS o
+                JOIN package AS p ON o.packageID = p.packageID
+                LEFT JOIN travel_agency AS a ON p.agencyID = a.userID
+                WHERE o.orderID = ? AND o.userID = ?
+            ";
+
+            // run sql
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bind_param("ii", $data->orderID, $userID);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            $booking = $result->fetch_assoc();
+
+            // check to make sure not invalid orderID
+            if (!$booking) {
+                $this->sendResponse("error", "No order exists for this orderID or no order belongs to this user for that orderID", 400);
+            }
+
+            $this->sendResponse("success", $booking, 200);
+
+
         } catch (mysqli_sql_exception $e) {
             $this->sendResponse("error", $e->getMessage(), 400);
         }

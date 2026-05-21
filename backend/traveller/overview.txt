@@ -6,6 +6,16 @@
 
 EVERY SINGLE REQUEST NEEDS THE TRAVELLERS API KEY
 
+## Failure
+
+EVERY FAILURE HAS THE SAME RETURN FORMAT
+THE ONLY THING THAT CHANGES IS THE DATA
+
+{
+    "status": "error",
+    "data": "Invalid api key."
+}
+
 ## getAllPackages
 
 # NOTE
@@ -276,87 +286,47 @@ ARRAYS:reviews, flights, accomodations, restaurants, accomodations, upcomingGrou
             "destinationID": 6,
             "agencyID": 13
         },
-        {
-            "orderID": 22,
-            "startDate": "2026-08-28",
-            "numTravellers": 5,
-            "status": "Active",
-            "totalPrice": "100000.00",
-            "userID": 2,
-            "packageID": 22,
-            "type": "City",
-            "name": "Barcelona City and Beach",
-            "description": "Combine the city highlights with the beaches of the Costa Brava.",
-            "pricePerPerson": "20000.00",
-            "duration": 9,
-            "destinationID": 11,
-            "agencyID": 12
-        },
-        {
-            "orderID": 32,
-            "startDate": "2026-10-17",
-            "numTravellers": 4,
-            "status": "Active",
-            "totalPrice": "100000.00",
-            "userID": 2,
-            "packageID": 32,
-            "type": "Cultural",
-            "name": "Egypt Nile River Cruise",
-            "description": "Sail the Nile and explore ancient temples from Cairo to Luxor.",
-            "pricePerPerson": "25000.00",
-            "duration": 10,
-            "destinationID": 16,
-            "agencyID": 11
-        },
-        {
-            "orderID": 42,
-            "startDate": "2026-10-13",
-            "numTravellers": 4,
-            "status": "Active",
-            "totalPrice": "68000.00",
-            "userID": 2,
-            "packageID": 42,
-            "type": "Adventure",
-            "name": "Tokyo Anime and Pop Culture",
-            "description": "Akihabara, Harajuku and the pop culture heart of modern Tokyo.",
-            "pricePerPerson": "17000.00",
-            "duration": 7,
-            "destinationID": 2,
-            "agencyID": 12
-        },
-        {
-            "orderID": 51,
-            "startDate": "2026-07-24",
-            "numTravellers": 5,
-            "status": "Active",
-            "totalPrice": "60000.00",
-            "userID": 2,
-            "packageID": 5,
-            "type": "Beach",
-            "name": "Cape Town Coastal Escape",
-            "description": "Sun, sea, wine and the best of the Western Cape in 6 days.",
-            "pricePerPerson": "12000.00",
-            "duration": 6,
-            "destinationID": 3,
-            "agencyID": 12
-        },
-        {
-            "orderID": 52,
-            "startDate": "2026-08-10",
-            "numTravellers": 9,
-            "status": "Active",
-            "totalPrice": "144000.00",
-            "userID": 2,
-            "packageID": 10,
-            "type": "Wellness",
-            "name": "Bangkok Wellness Retreat",
-            "description": "Combine Thai spa treatments with cultural exploration over 7 days.",
-            "pricePerPerson": "16000.00",
-            "duration": 7,
-            "destinationID": 5,
-            "agencyID": 13
-        }
+        ...
     ]
+}
+
+## getSingleBooking
+
+SOMEONE CAN ONLY GET THEIR OWN BOOKINGS OTHERWISE AN ERROR WILL BE SENT
+
+# query
+
+{
+    "type": "getSingleBooking",
+    "apikey": "nQkleaCMsoTSDR7YOQ7BIP60ektVKshSS8GFfcBuqf91K8/R",
+    "orderID": 52
+}
+
+# response
+
+{
+    "status": "success",
+    "timestamp": 1779389099,
+    "data": {
+        "orderID": 52,
+        "startDate": "2026-08-10",
+        "numTravellers": 9,
+        "status": "Active",
+        "totalPrice": "144000.00",
+        "userID": 13,
+        "packageID": 10,
+        "type": "Wellness",
+        "name": "Epic Voyages",
+        "description": "Combine Thai spa treatments with cultural exploration over 7 days.",
+        "pricePerPerson": "16000.00",
+        "duration": 7,
+        "destinationID": 5,
+        "agencyID": 13,
+        "street": "7 Adventure Road",
+        "suburb": "Hatfield",
+        "city": "Pretoria",
+        "country": "South Africa"
+    }
 }
 
 
