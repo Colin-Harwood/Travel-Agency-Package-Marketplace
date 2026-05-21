@@ -525,3 +525,35 @@ Only the comment, starRating and the packageID are required
     "timestamp": 1779385708,
     "data": "Review created successfully"
 }
+
+## getAllReviews
+
+Gets all of the reviews that that user has made
+
+# query
+
+{
+    "type": "getAllReviews",
+    "apikey": "nQkleaCMsoTSDR7YOQ7BIP60ektVKshSS8GFfcBuqf91K8/R"
+}
+
+# response
+
+{
+    "status": "success",
+    "timestamp": 1779390564,
+    "data": [
+        {
+            "reviewID": 2,
+            "rating": 5,
+            "comment": "Great itinerary and excellent accommodation choices throughout the journey.",
+            "date": "2026-07-25",
+            "firstName": "Sarah",
+            "middleName": "B",
+            "lastName": "Johnson",
+            "packageID": 2,
+            "agencyID": 12
+        },
+        ...
+    ]
+}

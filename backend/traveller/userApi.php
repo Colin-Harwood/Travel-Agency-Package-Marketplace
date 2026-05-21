@@ -36,7 +36,7 @@ class Database {
             $this->sendResponse("error", "Missing apikey field.", 400);
         }
 
-        $stmt = $this->conn->prepare("SELECT userID from user where apiKey = ?");
+        $stmt = $this->conn->prepare("SELECT userID from user where apiKey = ? AND userType = 'Traveller'");
         $stmt->bind_param("s", $request_data->apikey);
         $stmt->execute();
 
@@ -68,6 +68,8 @@ class Database {
             $this->getAllAttractions($request_data);
         } elseif ($request_data->type === "getAllRestaurants") {
             $this->getAllRestaurants($request_data);
+        } elseif ($request_data->type === "getAllReviews") {
+            $this->getAllReviews($request_data);
         } elseif ($request_data->type === "makeReview") {
             $this->makeReview($request_data);
         }  else {
@@ -657,6 +659,33 @@ class Database {
             ";
 
             $stmt = $this->conn->prepare($sql);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            $resData = [];
+
+            while ($row = $result->fetch_assoc()) {
+                $resData[] = $row;
+            }
+
+            $this->sendResponse("success", $resData, 200);
+
+        } catch (mysqli_sql_exception $e) {
+            $this->sendResponse("error", $e->getMessage(), 400);
+        }
+    }
+
+    public function getAllReviews($data) {
+        try {
+            $sql = "
+                SELECT reviewID, starRating AS rating, comment, reviewDate AS date, firstName, middleName, lastName, packageID, agencyID
+                FROM review AS r
+                JOIN user AS u ON r.userID = u.userID
+                WHERE u.apiKey = ?
+            ";
+
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bind_param("s", $data->apikey);
             $stmt->execute();
             $result = $stmt->get_result();
 
