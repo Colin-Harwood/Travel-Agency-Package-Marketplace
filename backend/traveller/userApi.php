@@ -668,7 +668,10 @@ class Database {
         try {
             $sql = "
                 SELECT * 
-                FROM restaurant
+                FROM restaurant AS r
+                LEFT JOIN package_restaurant AS pr ON r.restaurantID = pr.restaurantID
+                LEFT JOIN package AS p ON pr.packageID = p.packageID
+                WHERE 1=1 
             ";
 
             $stmt = $this->conn->prepare($sql);
@@ -713,21 +716,121 @@ class Database {
     }
 
     public function getAllAccomodations($data) {
+        $req_fields = ["accommodationType", "minRating", "minPrice", "maxPrice", "destination"];
+
+        foreach($req_fields as $val) {
+            if (!isset($data->$val)) {
+                    $this->sendResponse("error", "Missing field: " . $val . " in the request to makeRestaurant", 400);
+            }
+        }
+
         try {
             $sql = "
-                SELECT * 
-                FROM accommodation
+                SELECT
+                    a.*, 
+                    p.packageID, p.name AS packageName, p.type AS packageType, 
+                    p.description AS packageDescription, p.pricePerPerson, 
+                    p.status AS packageStatus, p.duration, p.agencyID,
+                    d.city, d.country
+                FROM accommodation AS a
+                LEFT JOIN package_accommodation AS pr ON a.accommodationID = pr.accommodationID
+                LEFT JOIN package AS p ON pr.packageID = p.packageID
+                LEFT JOIN destination AS d ON p.destinationID = d.destinationID
+                WHERE 1=1
             ";
 
+            $params = [];
+            $datatypes = "";
+
+            if (isset($data->accommodationType) && trim($data->accommodationType) !== "") {
+                $sql = $sql . " AND a.type = ?";
+                $params[] = $data->accommodationType;
+                $datatypes .= "s";
+            }
+
+            if (isset($data->minRating) && trim($data->minRating) !== "") {
+                $sql = $sql . " AND a.rating > ?";
+                $params[] = $data->minRating;
+                $datatypes .= "d";
+            }
+
+            if (isset($data->minPrice) && trim($data->minPrice) !== "") {
+                $sql = $sql . " AND a.pricePerNight > ?";
+                $params[] = $data->minPrice;
+                $datatypes .= "d";
+            }
+
+            if (isset($data->maxPrice) && trim($data->maxPrice) !== "") {
+                // $priceStmt = " AND (a.price = '$'";
+
+                // if ($data->maxPrice === "$$") {
+                //     $priceStmt .= " OR a.price = '$$'";
+                // } elseif ($data->maxPrice === "$$$") {
+                //     $priceStmt .= " OR a.price = '$$'  OR a.price = '$$$'";
+                // } elseif ($data->maxPrice === "$$$$") {
+                //     $priceStmt .= " OR a.price = '$$'  OR a.price = '$$$'  OR a.price = '$$$$'";
+                // }
+
+                // $priceStmt .= ")";
+
+                // $sql = $sql . $priceStmt;
+
+                $sql = $sql . " AND a.pricePerNight < ?";
+                $params[] = $data->maxPrice;
+                $datatypes .= "d";
+            }
+
+            if (!empty($data->destination) && trim($data->destination) !== "") {
+                $sql .= " AND (d.city LIKE ? OR d.country LIKE ? OR d.destinationID = ?)";
+                $params[] = "%" . $data->destination . "%";
+                $params[] = "%" . $data->destination . "%";
+                $params[] = $data->destination;
+                $datatypes .= "sss";
+            }
+
             $stmt = $this->conn->prepare($sql);
+            if (!empty($params)) {
+                $stmt->bind_param($datatypes, ...$params);
+            }
             $stmt->execute();
             $result = $stmt->get_result();
 
-            $resData = [];
+            $groupedAccommodations = [];
 
             while ($row = $result->fetch_assoc()) {
-                $resData[] = $row;
+                $accId = $row['accommodationID'];
+
+                // add the main accommodation if it doesn't exist yet
+                if (!isset($groupedAccommodations[$accId])) {
+                    $groupedAccommodations[$accId] = [
+                        'accommodationID' => $row['accommodationID'],
+                        'name'            => $row['name'],
+                        'type'            => $row['type'],
+                        'rating'          => $row['rating'],
+                        'pricePerNight'           => $row['pricePerNight'],
+                        'city'            => $row['city'],
+                        'country'         => $row['country'],
+                        'packages'        => [] // empty subarray
+                    ];
+                }
+
+                // if package exists add it to the subarray
+                if (!empty($row['packageID'])) {
+                    $groupedAccommodations[$accId]['packages'][] = [
+                        'packageID'      => $row['packageID'],
+                        'name'           => $row['packageName'], 
+                        'type'           => $row['packageType'], 
+                        'description'    => $row['packageDescription'],
+                        'pricePerPerson' => $row['pricePerPerson'],
+                        'status'         => $row['packageStatus'],
+                        'duration'       => $row['duration'],
+                        'agencyID'       => $row['agencyID']
+                    ];
+                }
             }
+
+            // make it not dict
+            $resData = array_values($groupedAccommodations);
 
             $this->sendResponse("success", $resData, 200);
 

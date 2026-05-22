@@ -396,18 +396,26 @@ All fields are needed
 
 ## getAllAccommodations
 
+Any of the queries can be left empty same as above
+Destination can be city, country or id
+
 # Query
 
 {
     "type": "getAllAccommodations",
-    "apikey": "nQkleaCMsoTSDR7YOQ7BIP60ektVKshSS8GFfcBuqf91K8/R"
+    "apikey": "nQkleaCMsoTSDR7YOQ7BIP60ektVKshSS8GFfcBuqf91K8/R",
+    "accommodationType": "Hotel",
+    "minRating": 4.0,
+    "minPrice": "1000",
+    "maxPrice": "10000",
+    "destination": "1"
 }
 
 # Response
 
 {
     "status": "success",
-    "timestamp": 1779371291,
+    "timestamp": 1779467840,
     "data": [
         {
             "accommodationID": 1,
@@ -415,17 +423,21 @@ All fields are needed
             "type": "Hotel",
             "rating": "4.5",
             "pricePerNight": "3500.00",
-            "destinationID": 1
-        },
-        {
-            "accommodationID": 2,
-            "name": "Generator Paris",
-            "type": "Hostel",
-            "rating": "3.8",
-            "pricePerNight": "800.00",
-            "destinationID": 1
-        },
-        ...
+            "city": "Paris",
+            "country": "France",
+            "packages": [
+                {
+                    "packageID": 41,
+                    "name": "Paris Off the Beaten Track",
+                    "type": "Cultural",
+                    "description": "Hidden gems, local markets and authentic Parisian neighbourhood life.",
+                    "pricePerPerson": "18000.00",
+                    "status": "Inactive",
+                    "duration": 8,
+                    "agencyID": 13
+                }
+            ]
+        }
     ]
 }
 
