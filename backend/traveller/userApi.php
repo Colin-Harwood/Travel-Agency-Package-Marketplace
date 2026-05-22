@@ -908,20 +908,58 @@ class Database {
 
     public function getAllAttractions($data) {
         try {
+            // select now accomodates fot packages
             $sql = "
-                SELECT * 
-                FROM attraction
+                SELECT 
+                    a.*, 
+                    p.packageID, p.name AS packageName, p.type AS packageType, 
+                    p.description AS packageDescription, p.pricePerPerson, 
+                    p.status AS packageStatus, p.duration, p.agencyID
+                FROM attraction AS a
+                LEFT JOIN package_attraction AS pa 
+                    ON a.destinationID = pa.destinationID AND a.name = pa.name
+                LEFT JOIN package AS p 
+                    ON pa.packageID = p.packageID
             ";
 
             $stmt = $this->conn->prepare($sql);
             $stmt->execute();
             $result = $stmt->get_result();
 
-            $resData = [];
+            $groupedAttractions = [];
 
             while ($row = $result->fetch_assoc()) {
-                $resData[] = $row;
+                // group by comp key
+                $attrKey = $row['destinationID'] . '_' . $row['name'];
+                
+                // make main entry
+                if (!isset($groupedAttractions[$attrKey])) {
+                    $groupedAttractions[$attrKey] = [
+                        "name"          => $row["name"],
+                        "entryFee"      => $row["entryFee"],
+                        "description"   => $row["description"], 
+                        "destinationID" => $row["destinationID"],
+                        "packages"      => []
+                    ];
+                }
+            
+                // if package add to subarray
+                if (!empty($row['packageID'])) {
+                    $groupedAttractions[$attrKey]['packages'][] = [
+                        'packageID'      => $row['packageID'],
+                        'name'           => $row['packageName'], 
+                        'type'           => $row['packageType'], 
+                        'description'    => $row['packageDescription'], 
+                        'pricePerPerson' => $row['pricePerPerson'],
+                        'status'         => $row['packageStatus'],
+                        'duration'       => $row['duration'],
+                        'agencyID'       => $row['agencyID']
+                    ];
+                }
             }
+
+            // flatten to array from dictionary
+            $resData = array_values($groupedAttractions);
 
             $this->sendResponse("success", $resData, 200);
 

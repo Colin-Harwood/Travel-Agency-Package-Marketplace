@@ -492,20 +492,26 @@ Destination can be city, country or id
 
 {
     "status": "success",
-    "timestamp": 1779371707,
+    "timestamp": 1779477104,
     "data": [
         {
             "name": "Eiffel Tower",
             "entryFee": "26.00",
             "description": "Iconic iron lattice tower on the Champ de Mars.",
-            "destinationID": 1
-        },
-        {
-            "name": "Louvre Museum",
-            "entryFee": "17.00",
-            "description": "The worlds largest art museum, housing the Mona Lisa.",
-            "destinationID": 1
-        },
+            "destinationID": 1,
+            "packages": [
+                {
+                    "packageID": 41,
+                    "name": "Paris Off the Beaten Track",
+                    "type": "Cultural",
+                    "description": "Hidden gems, local markets and authentic Parisian neighbourhood life.",
+                    "pricePerPerson": "18000.00",
+                    "status": "Inactive",
+                    "duration": 8,
+                    "agencyID": 13
+                }
+            ]
+        }
         ...
     ]
 }
