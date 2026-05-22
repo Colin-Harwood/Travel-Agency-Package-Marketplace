@@ -666,23 +666,56 @@ class Database {
 
     public function getAllRestaurants($data) {
         try {
+            // updated the sql to get the packages
             $sql = "
-                SELECT * 
+                SELECT 
+                    r.*, 
+                    p.packageID, p.name AS packageName, p.type AS packageType, 
+                    p.description AS packageDescription, p.pricePerPerson, 
+                    p.status AS packageStatus, p.duration, p.agencyID
                 FROM restaurant AS r
                 LEFT JOIN package_restaurant AS pr ON r.restaurantID = pr.restaurantID
                 LEFT JOIN package AS p ON pr.packageID = p.packageID
-                WHERE 1=1 
             ";
 
             $stmt = $this->conn->prepare($sql);
             $stmt->execute();
             $result = $stmt->get_result();
 
-            $resData = [];
+            $groupedRestaurants = [];
 
             while ($row = $result->fetch_assoc()) {
-                $resData[] = $row;
+                $restId = $row['restaurantID'];
+                
+                // build main if not exists
+                if (!isset($groupedRestaurants[$restId])) {
+                    $groupedRestaurants[$restId] = [
+                        "restaurantID"  => $row["restaurantID"],
+                        "name"          => $row["name"],
+                        "priceRange"    => $row["priceRange"],
+                        "cuisine"       => $row["cuisine"],
+                        "destinationID" => $row["destinationID"],
+                        "packages"      => []
+                    ];
+                }
+            
+                // add package to sub array
+                if (!empty($row['packageID'])) {
+                    $groupedRestaurants[$restId]['packages'][] = [
+                        'packageID'      => $row['packageID'],
+                        'name'           => $row['packageName'], 
+                        'type'           => $row['packageType'], 
+                        'description'    => $row['packageDescription'],
+                        'pricePerPerson' => $row['pricePerPerson'],
+                        'status'         => $row['packageStatus'],
+                        'duration'       => $row['duration'],
+                        'agencyID'       => $row['agencyID']
+                    ];
+                }
             }
+
+            // make standard array
+            $resData = array_values($groupedRestaurants);
 
             $this->sendResponse("success", $resData, 200);
 
