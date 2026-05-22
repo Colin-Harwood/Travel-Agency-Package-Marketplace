@@ -332,44 +332,65 @@ SOMEONE CAN ONLY GET THEIR OWN BOOKINGS OTHERWISE AN ERROR WILL BE SENT
 
 ## ALL BASIC GETS LIKE FLIGHT ACCOMMODATION etc
 
-# ALL OF THESE ONLY TAKE THE TYPE AND APIKEY AND RETURN EVERYTHING FOR THAT TABLE
-
 ## getAllFlights
+
+Data is an array of all the flights by id and each has an array of the associated packages
+
+Make the strings empty (ie "") for no param and make the prices 0 for no param
+All fields are needed
 
 # Query
 
 {
     "type": "getAllFlights",
-    "apikey": "nQkleaCMsoTSDR7YOQ7BIP60ektVKshSS8GFfcBuqf91K8/R"
+    "apikey": "nQkleaCMsoTSDR7YOQ7BIP60ektVKshSS8GFfcBuqf91K8/R",
+    "startDate": "2026-10-04",
+    "endDate": "",
+    "airline": "Cathay",
+    "minPrice": 10000,
+    "maxPrice": 15000
 }
 
 #Response
 
 {
     "status": "success",
-    "timestamp": 1779370878,
+    "timestamp": 1779463447,
     "data": [
         {
-            "flightID": 1,
-            "airline": "Air France",
-            "flightNumber": "AF101",
+            "flightID": 48,
+            "airline": "Cathay Pacific",
+            "flightNumber": "CX234",
             "departureAirport": "OR Tambo International",
-            "arrivalAirport": "Charles de Gaulle",
-            "departureTime": "2026-07-01 08:00:00",
-            "arrivalTime": "2026-07-01 18:00:00",
-            "price": "12000.00"
-        },
-        {
-            "flightID": 2,
-            "airline": "Japan Airlines",
-            "flightNumber": "JL302",
-            "departureAirport": "OR Tambo International",
-            "arrivalAirport": "Narita International",
-            "departureTime": "2026-07-03 10:00:00",
-            "arrivalTime": "2026-07-04 06:00:00",
-            "price": "14000.00"
-        },
-    ...
+            "arrivalAirport": "Hong Kong International",
+            "departureTime": "2026-10-05 22:00:00",
+            "arrivalTime": "2026-10-06 14:00:00",
+            "price": "13800.00",
+            "packages": [
+                {
+                    "packageID": 23,
+                    "type": "City",
+                    "name": "Dubai Modern Marvel",
+                    "description": "Skyscrapers, luxury malls and desert safari in 6 days.",
+                    "pricePerPerson": "18000.00",
+                    "status": "Active",
+                    "duration": 6,
+                    "destinationID": 12,
+                    "agencyID": 11
+                },
+                {
+                    "packageID": 48,
+                    "type": "City",
+                    "name": "Dubai Shopping Festival Tour",
+                    "description": "Timed with the Dubai Shopping Festival for the ultimate retail trip.",
+                    "pricePerPerson": "21000.00",
+                    "status": "Draft",
+                    "duration": 7,
+                    "destinationID": 12,
+                    "agencyID": 13
+                }
+            ]
+        }
     ]
 }
 

@@ -555,22 +555,107 @@ class Database {
     }
 
     public function getAllFlights($data) {
+        $req_fields = ["startDate", "endDate", "airline", "minPrice", "maxPrice"];
+
+        foreach($req_fields as $val) {
+            if (!isset($data->$val)) {
+                    $this->sendResponse("error", "Missing field: " . $val . " in the request to makeReview", 400);
+            }
+        }
+
         try {
             $sql = "
                 SELECT * 
-                FROM flight
-                ORDER BY departureTime
+                FROM flight AS f
+                LEFT JOIN package_flight AS pf ON f.flightID = pf.flightID
+                LEFT JOIN package as p ON p.packageID = pf.packageID
+                WHERE 1=1
             ";
 
+            $params = [];
+            $datatypes = "";
+
+            if (isset($data->startDate) && trim($data->startDate) !== "") {
+                $sql = $sql . " AND f.departureTime > ?";
+                $params[] = $data->startDate;
+                $datatypes .= "s";
+            }
+
+            if (isset($data->endDate) && trim($data->endDate) !== "") {
+                $sql = $sql . " AND f.arrivalTime < ?";
+                $params[] = $data->endDate;
+                $datatypes .= "s";
+            }
+
+            if (isset($data->airline) && trim($data->airline) !== "") {
+                $sql = $sql . " AND f.airline LIKE ?";
+                $params[] = "%" . $data->airline . "%";
+                $datatypes .= "s";
+            }
+
+            if (isset($data->minPrice) && trim($data->minPrice) != 0) {
+                $sql = $sql . " AND f.price > ?";
+                $params[] = $data->minPrice;
+                $datatypes .= "d";
+            }
+
+            if (isset($data->maxPrice) && trim($data->maxPrice) != 0) {
+                $sql = $sql . " AND f.price < ?";
+                $params[] = $data->maxPrice;
+                $datatypes .= "d";
+            }
+
+            $sql .= " ORDER BY f.price ASC";
+
             $stmt = $this->conn->prepare($sql);
+            if (!empty($params)) {
+                $stmt->bind_param($datatypes, ...$params);
+            }
             $stmt->execute();
+
             $result = $stmt->get_result();
 
             $flights = [];
 
+            $groupedFlights = [];
+
             while ($row = $result->fetch_assoc()) {
-                $flights[] = $row;
+                $flightId = $row['flightID'];
+
+                // make main entry for that flight if it hasnt been made
+                if (!isset($groupedFlights[$flightId])) {
+                    $groupedFlights[$flightId] = [
+                        'flightID'         => $row['flightID'],
+                        'airline'          => $row['airline'],
+                        'flightNumber'     => $row['flightNumber'],
+                        'departureAirport' => $row['departureAirport'],
+                        'arrivalAirport'   => $row['arrivalAirport'],
+                        'departureTime'    => $row['departureTime'],
+                        'arrivalTime'      => $row['arrivalTime'],
+                        'price'            => $row['price'],
+                        'packages'         => [] //make the packages array empty at first
+                    ];
+                }
+
+                // if a package exists in the array for that flight id we add the package to that instead of duplicating data
+                if (!empty($row['packageID'])) {
+                    $groupedFlights[$flightId]['packages'][] = [
+                        'packageID'      => $row['packageID'],
+                        'type'           => $row['type'],
+                        'name'           => $row['name'],
+                        'description'    => $row['description'],
+                        'pricePerPerson' => $row['pricePerPerson'],
+                        'status'         => $row['status'],
+                        'duration'       => $row['duration'],
+                        'destinationID'  => $row['destinationID'],
+                        'agencyID'       => $row['agencyID']
+                    ];
+                }
             }
+
+            // reindex the array so that its not a dict and becomes an array
+            // as the flight id used be the keys to the values but now just in the arrays
+            $flights = array_values($groupedFlights);
 
             $this->sendResponse("success", $flights, 200);
 
