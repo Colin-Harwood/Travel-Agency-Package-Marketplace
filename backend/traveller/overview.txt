@@ -443,6 +443,8 @@ Destination can be city, country or id
 
 ## getAllDestinations
 
+Now returns stats and all of the associated packages
+
 # Query
 
 {
@@ -453,14 +455,25 @@ Destination can be city, country or id
 # Response
 
 {
-"status": "success",
-    "timestamp": 1779475762,
+    "status": "success",
+    "timestamp": 1779479977,
     "data": [
         {
             "destinationID": 1,
             "country": "France",
             "city": "Paris",
             "description": "The city of light, famous for the Eiffel Tower and haute cuisine.",
+            "stats": {
+                "packageCount": 3,
+                "agencyCount": 3,
+                "bookingCount": 3,
+                "upcomingTrips": 3,
+                "reviewCount": 5,
+                "minPrice": "15000.00",
+                "maxPrice": "28000.00",
+                "avgPrice": "18200.00",
+                "avgRating": 4
+            },
             "packages": [
                 {
                     "packageID": 1,
@@ -474,7 +487,7 @@ Destination can be city, country or id
                 },
                 ...
             ]
-        },
+        }
         ...
     ]
 }

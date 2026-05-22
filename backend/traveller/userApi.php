@@ -726,15 +726,44 @@ class Database {
 
     public function getAllDestinations($data) {
         try {
-            // update sql to inlcude packages
+            // update to meet new requirements to fulfill stats needs
             $sql = "
                 SELECT 
                     d.*, 
                     p.packageID, p.name AS packageName, p.type AS packageType, 
                     p.description AS packageDescription, p.pricePerPerson, 
-                    p.status AS packageStatus, p.duration, p.agencyID
+                    p.status AS packageStatus, p.duration, p.agencyID,
+                    
+                    -- from below subquery
+                    stats.packageCount, stats.agencyCount, stats.minPrice, 
+                    stats.maxPrice, stats.avgPrice, stats.bookingCount, 
+                    stats.upcomingTrips, stats.reviewCount, stats.avgRating
+                    
                 FROM destination AS d
                 LEFT JOIN package AS p ON d.destinationID = p.destinationID
+                
+                -- subquery to aggreagate the stats
+                LEFT JOIN (
+                    SELECT 
+                        p2.destinationID,
+                        COUNT(DISTINCT p2.packageID) AS packageCount,
+                        COUNT(DISTINCT p2.agencyID) AS agencyCount,
+                        MIN(p2.pricePerPerson) AS minPrice,
+                        MAX(p2.pricePerPerson) AS maxPrice,
+                        AVG(p2.pricePerPerson) AS avgPrice,
+                        
+                        -- bookings
+                        COUNT(DISTINCT o.orderID) AS bookingCount,
+                        COUNT(DISTINCT CASE WHEN o.startDate > CURDATE() THEN o.orderID END) AS upcomingTrips,
+                        
+                        -- reviews
+                        COUNT(DISTINCT r.reviewID) AS reviewCount,
+                        AVG(r.starRating) AS avgRating
+                    FROM package p2
+                    LEFT JOIN `order` o ON p2.packageID = o.orderID
+                    LEFT JOIN review r ON p2.packageID = r.packageID
+                    GROUP BY p2.destinationID
+                ) AS stats ON d.destinationID = stats.destinationID
             ";
 
             $stmt = $this->conn->prepare($sql);
@@ -746,18 +775,32 @@ class Database {
             while ($row = $result->fetch_assoc()) {
                 $destId = $row['destinationID'];
                 
-                // main destination
+                // build main destination
                 if (!isset($groupedDestinations[$destId])) {
                     $groupedDestinations[$destId] = [
                         "destinationID" => $row["destinationID"],
                         "country"       => $row["country"],
                         "city"          => $row["city"],
                         "description"   => $row["description"],
-                        "packages"      => []
+                        
+                        // nest stats
+                        "stats" => [
+                            "packageCount"  => (int)$row["packageCount"],
+                            "agencyCount"   => (int)$row["agencyCount"],
+                            "bookingCount"  => (int)$row["bookingCount"],
+                            "upcomingTrips" => (int)$row["upcomingTrips"],
+                            "reviewCount"   => (int)$row["reviewCount"],
+                            "minPrice"      => $row["minPrice"] ? number_format((float)$row["minPrice"], 2, '.', '') : null,
+                            "maxPrice"      => $row["maxPrice"] ? number_format((float)$row["maxPrice"], 2, '.', '') : null,
+                            "avgPrice"      => $row["avgPrice"] ? number_format((float)$row["avgPrice"], 2, '.', '') : null,
+                            "avgRating"     => $row["avgRating"] ? round((float)$row["avgRating"], 1) : null
+                        ],
+                        
+                        "packages"      => [],
                     ];
                 }
             
-                // add to the subarray
+                // add to subarray
                 if (!empty($row['packageID'])) {
                     $groupedDestinations[$destId]['packages'][] = [
                         'packageID'      => $row['packageID'],
@@ -772,7 +815,7 @@ class Database {
                 }
             }
 
-            // strip out keys
+            // remove keys and flatten
             $resData = array_values($groupedDestinations);
 
             $this->sendResponse("success", $resData, 200);
