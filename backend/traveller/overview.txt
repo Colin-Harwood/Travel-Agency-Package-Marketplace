@@ -621,3 +621,23 @@ Gets all of the reviews that that user has made
         ...
     ]
 }
+
+## deleteReview
+
+User can only delete their own reviews
+
+# query
+
+{
+    "type": "deleteReview",
+    "apikey": "nQkleaCMsoTSDR7YOQ7BIP60ektVKshSS8GFfcBuqf91K8/R",
+    "reviewID": "51"
+}
+
+# response
+
+{
+    "status": "success",
+    "timestamp": 1779481909,
+    "data": "Review deleted successfully"
+}

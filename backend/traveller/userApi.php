@@ -72,7 +72,9 @@ class Database {
             $this->getAllReviews($request_data);
         } elseif ($request_data->type === "makeReview") {
             $this->makeReview($request_data);
-        }  else {
+        } elseif ($request_data->type === "deleteReview") {
+            $this->deleteReview($request_data);
+        } else {
             $this->sendResponse("error", "Invalid request type", 400);
         }
     }
@@ -1096,6 +1098,40 @@ class Database {
 
         } catch(mysqli_sql_exception $e) {
             $this->sendResponse("error", $e->getMessage(), 400);
+        }
+    }
+
+    public function deleteReview($data) {
+        if (!isset($data->reviewID)) {
+            $this->sendResponse("error", "Missing field reviewID", 400);
+        }
+
+        try {
+            $userID = $this->getUserID($data);
+            // wow 1111
+            // check valid given info
+            $stmt = $this->conn->prepare("SELECT userID FROM review WHERE reviewID = ? AND userID = ?");
+            $stmt->bind_param("ii", $data->reviewID, $userID);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $row = $result->fetch_assoc();
+            if (!$row) {
+                $this->sendResponse("error", "No review exists for this user for the given reviewID", 400);
+            }
+
+            $sql = "
+                DELETE FROM review WHERE reviewID = ?  AND userID = ?
+            ";
+
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bind_param("ii", $data->reviewID, $userID);
+            $stmt->execute();
+            $stmt->close();
+
+            $this->sendResponse("success", "Review deleted successfully", 200);
+
+        } catch (mysqli_sql_exception $e) {
+            $this->sendResponse("error", "Mysql thre exception in delete review.", 500);
         }
     }
 
