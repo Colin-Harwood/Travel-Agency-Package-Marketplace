@@ -453,20 +453,27 @@ Destination can be city, country or id
 # Response
 
 {
-    "status": "success",
-    "timestamp": 1779371628,
+"status": "success",
+    "timestamp": 1779475762,
     "data": [
         {
             "destinationID": 1,
             "country": "France",
             "city": "Paris",
-            "description": "The city of light, famous for the Eiffel Tower and haute cuisine."
-        },
-        {
-            "destinationID": 2,
-            "country": "Japan",
-            "city": "Tokyo",
-            "description": "A vibrant metropolis blending ultramodern and traditional culture."
+            "description": "The city of light, famous for the Eiffel Tower and haute cuisine.",
+            "packages": [
+                {
+                    "packageID": 1,
+                    "name": "Paris Classic Getaway",
+                    "type": "Cultural",
+                    "description": "Explore Parisian art, cuisine and iconic landmarks over 7 days.",
+                    "pricePerPerson": "15000.00",
+                    "status": "Active",
+                    "duration": 7,
+                    "agencyID": 11
+                },
+                ...
+            ]
         },
         ...
     ]

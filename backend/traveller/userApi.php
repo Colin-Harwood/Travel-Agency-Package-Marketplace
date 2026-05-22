@@ -726,20 +726,54 @@ class Database {
 
     public function getAllDestinations($data) {
         try {
+            // update sql to inlcude packages
             $sql = "
-                SELECT * 
-                FROM destination
+                SELECT 
+                    d.*, 
+                    p.packageID, p.name AS packageName, p.type AS packageType, 
+                    p.description AS packageDescription, p.pricePerPerson, 
+                    p.status AS packageStatus, p.duration, p.agencyID
+                FROM destination AS d
+                LEFT JOIN package AS p ON d.destinationID = p.destinationID
             ";
 
             $stmt = $this->conn->prepare($sql);
             $stmt->execute();
             $result = $stmt->get_result();
 
-            $resData = [];
+            $groupedDestinations = [];
 
             while ($row = $result->fetch_assoc()) {
-                $resData[] = $row;
+                $destId = $row['destinationID'];
+                
+                // main destination
+                if (!isset($groupedDestinations[$destId])) {
+                    $groupedDestinations[$destId] = [
+                        "destinationID" => $row["destinationID"],
+                        "country"       => $row["country"],
+                        "city"          => $row["city"],
+                        "description"   => $row["description"],
+                        "packages"      => []
+                    ];
+                }
+            
+                // add to the subarray
+                if (!empty($row['packageID'])) {
+                    $groupedDestinations[$destId]['packages'][] = [
+                        'packageID'      => $row['packageID'],
+                        'name'           => $row['packageName'], 
+                        'type'           => $row['packageType'], 
+                        'description'    => $row['packageDescription'],
+                        'pricePerPerson' => $row['pricePerPerson'],
+                        'status'         => $row['packageStatus'],
+                        'duration'       => $row['duration'],
+                        'agencyID'       => $row['agencyID']
+                    ];
+                }
             }
+
+            // strip out keys
+            $resData = array_values($groupedDestinations);
 
             $this->sendResponse("success", $resData, 200);
 
