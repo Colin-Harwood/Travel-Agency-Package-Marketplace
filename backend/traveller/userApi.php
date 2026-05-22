@@ -555,22 +555,107 @@ class Database {
     }
 
     public function getAllFlights($data) {
+        $req_fields = ["startDate", "endDate", "airline", "minPrice", "maxPrice"];
+
+        foreach($req_fields as $val) {
+            if (!isset($data->$val)) {
+                    $this->sendResponse("error", "Missing field: " . $val . " in the request to makeReview", 400);
+            }
+        }
+
         try {
             $sql = "
                 SELECT * 
-                FROM flight
-                ORDER BY departureTime
+                FROM flight AS f
+                LEFT JOIN package_flight AS pf ON f.flightID = pf.flightID
+                LEFT JOIN package as p ON p.packageID = pf.packageID
+                WHERE 1=1
             ";
 
+            $params = [];
+            $datatypes = "";
+
+            if (isset($data->startDate) && trim($data->startDate) !== "") {
+                $sql = $sql . " AND f.departureTime > ?";
+                $params[] = $data->startDate;
+                $datatypes .= "s";
+            }
+
+            if (isset($data->endDate) && trim($data->endDate) !== "") {
+                $sql = $sql . " AND f.arrivalTime < ?";
+                $params[] = $data->endDate;
+                $datatypes .= "s";
+            }
+
+            if (isset($data->airline) && trim($data->airline) !== "") {
+                $sql = $sql . " AND f.airline LIKE ?";
+                $params[] = "%" . $data->airline . "%";
+                $datatypes .= "s";
+            }
+
+            if (isset($data->minPrice) && trim($data->minPrice) != 0) {
+                $sql = $sql . " AND f.price > ?";
+                $params[] = $data->minPrice;
+                $datatypes .= "d";
+            }
+
+            if (isset($data->maxPrice) && trim($data->maxPrice) != 0) {
+                $sql = $sql . " AND f.price < ?";
+                $params[] = $data->maxPrice;
+                $datatypes .= "d";
+            }
+
+            $sql .= " ORDER BY f.price ASC";
+
             $stmt = $this->conn->prepare($sql);
+            if (!empty($params)) {
+                $stmt->bind_param($datatypes, ...$params);
+            }
             $stmt->execute();
+
             $result = $stmt->get_result();
 
             $flights = [];
 
+            $groupedFlights = [];
+
             while ($row = $result->fetch_assoc()) {
-                $flights[] = $row;
+                $flightId = $row['flightID'];
+
+                // make main entry for that flight if it hasnt been made
+                if (!isset($groupedFlights[$flightId])) {
+                    $groupedFlights[$flightId] = [
+                        'flightID'         => $row['flightID'],
+                        'airline'          => $row['airline'],
+                        'flightNumber'     => $row['flightNumber'],
+                        'departureAirport' => $row['departureAirport'],
+                        'arrivalAirport'   => $row['arrivalAirport'],
+                        'departureTime'    => $row['departureTime'],
+                        'arrivalTime'      => $row['arrivalTime'],
+                        'price'            => $row['price'],
+                        'packages'         => [] //make the packages array empty at first
+                    ];
+                }
+
+                // if a package exists in the array for that flight id we add the package to that instead of duplicating data
+                if (!empty($row['packageID'])) {
+                    $groupedFlights[$flightId]['packages'][] = [
+                        'packageID'      => $row['packageID'],
+                        'type'           => $row['type'],
+                        'name'           => $row['name'],
+                        'description'    => $row['description'],
+                        'pricePerPerson' => $row['pricePerPerson'],
+                        'status'         => $row['status'],
+                        'duration'       => $row['duration'],
+                        'destinationID'  => $row['destinationID'],
+                        'agencyID'       => $row['agencyID']
+                    ];
+                }
             }
+
+            // reindex the array so that its not a dict and becomes an array
+            // as the flight id used be the keys to the values but now just in the arrays
+            $flights = array_values($groupedFlights);
 
             $this->sendResponse("success", $flights, 200);
 
@@ -581,20 +666,56 @@ class Database {
 
     public function getAllRestaurants($data) {
         try {
+            // updated the sql to get the packages
             $sql = "
-                SELECT * 
-                FROM restaurant
+                SELECT 
+                    r.*, 
+                    p.packageID, p.name AS packageName, p.type AS packageType, 
+                    p.description AS packageDescription, p.pricePerPerson, 
+                    p.status AS packageStatus, p.duration, p.agencyID
+                FROM restaurant AS r
+                LEFT JOIN package_restaurant AS pr ON r.restaurantID = pr.restaurantID
+                LEFT JOIN package AS p ON pr.packageID = p.packageID
             ";
 
             $stmt = $this->conn->prepare($sql);
             $stmt->execute();
             $result = $stmt->get_result();
 
-            $resData = [];
+            $groupedRestaurants = [];
 
             while ($row = $result->fetch_assoc()) {
-                $resData[] = $row;
+                $restId = $row['restaurantID'];
+                
+                // build main if not exists
+                if (!isset($groupedRestaurants[$restId])) {
+                    $groupedRestaurants[$restId] = [
+                        "restaurantID"  => $row["restaurantID"],
+                        "name"          => $row["name"],
+                        "priceRange"    => $row["priceRange"],
+                        "cuisine"       => $row["cuisine"],
+                        "destinationID" => $row["destinationID"],
+                        "packages"      => []
+                    ];
+                }
+            
+                // add package to sub array
+                if (!empty($row['packageID'])) {
+                    $groupedRestaurants[$restId]['packages'][] = [
+                        'packageID'      => $row['packageID'],
+                        'name'           => $row['packageName'], 
+                        'type'           => $row['packageType'], 
+                        'description'    => $row['packageDescription'],
+                        'pricePerPerson' => $row['pricePerPerson'],
+                        'status'         => $row['packageStatus'],
+                        'duration'       => $row['duration'],
+                        'agencyID'       => $row['agencyID']
+                    ];
+                }
             }
+
+            // make standard array
+            $resData = array_values($groupedRestaurants);
 
             $this->sendResponse("success", $resData, 200);
 
@@ -605,20 +726,97 @@ class Database {
 
     public function getAllDestinations($data) {
         try {
+            // update to meet new requirements to fulfill stats needs
             $sql = "
-                SELECT * 
-                FROM destination
+                SELECT 
+                    d.*, 
+                    p.packageID, p.name AS packageName, p.type AS packageType, 
+                    p.description AS packageDescription, p.pricePerPerson, 
+                    p.status AS packageStatus, p.duration, p.agencyID,
+                    
+                    -- from below subquery
+                    stats.packageCount, stats.agencyCount, stats.minPrice, 
+                    stats.maxPrice, stats.avgPrice, stats.bookingCount, 
+                    stats.upcomingTrips, stats.reviewCount, stats.avgRating
+                    
+                FROM destination AS d
+                LEFT JOIN package AS p ON d.destinationID = p.destinationID
+                
+                -- subquery to aggreagate the stats
+                LEFT JOIN (
+                    SELECT 
+                        p2.destinationID,
+                        COUNT(DISTINCT p2.packageID) AS packageCount,
+                        COUNT(DISTINCT p2.agencyID) AS agencyCount,
+                        MIN(p2.pricePerPerson) AS minPrice,
+                        MAX(p2.pricePerPerson) AS maxPrice,
+                        AVG(p2.pricePerPerson) AS avgPrice,
+                        
+                        -- bookings
+                        COUNT(DISTINCT o.orderID) AS bookingCount,
+                        COUNT(DISTINCT CASE WHEN o.startDate > CURDATE() THEN o.orderID END) AS upcomingTrips,
+                        
+                        -- reviews
+                        COUNT(DISTINCT r.reviewID) AS reviewCount,
+                        AVG(r.starRating) AS avgRating
+                    FROM package p2
+                    LEFT JOIN `order` o ON p2.packageID = o.orderID
+                    LEFT JOIN review r ON p2.packageID = r.packageID
+                    GROUP BY p2.destinationID
+                ) AS stats ON d.destinationID = stats.destinationID
             ";
 
             $stmt = $this->conn->prepare($sql);
             $stmt->execute();
             $result = $stmt->get_result();
 
-            $resData = [];
+            $groupedDestinations = [];
 
             while ($row = $result->fetch_assoc()) {
-                $resData[] = $row;
+                $destId = $row['destinationID'];
+                
+                // build main destination
+                if (!isset($groupedDestinations[$destId])) {
+                    $groupedDestinations[$destId] = [
+                        "destinationID" => $row["destinationID"],
+                        "country"       => $row["country"],
+                        "city"          => $row["city"],
+                        "description"   => $row["description"],
+                        
+                        // nest stats
+                        "stats" => [
+                            "packageCount"  => (int)$row["packageCount"],
+                            "agencyCount"   => (int)$row["agencyCount"],
+                            "bookingCount"  => (int)$row["bookingCount"],
+                            "upcomingTrips" => (int)$row["upcomingTrips"],
+                            "reviewCount"   => (int)$row["reviewCount"],
+                            "minPrice"      => $row["minPrice"] ? number_format((float)$row["minPrice"], 2, '.', '') : null,
+                            "maxPrice"      => $row["maxPrice"] ? number_format((float)$row["maxPrice"], 2, '.', '') : null,
+                            "avgPrice"      => $row["avgPrice"] ? number_format((float)$row["avgPrice"], 2, '.', '') : null,
+                            "avgRating"     => $row["avgRating"] ? round((float)$row["avgRating"], 1) : null
+                        ],
+                        
+                        "packages"      => [],
+                    ];
+                }
+            
+                // add to subarray
+                if (!empty($row['packageID'])) {
+                    $groupedDestinations[$destId]['packages'][] = [
+                        'packageID'      => $row['packageID'],
+                        'name'           => $row['packageName'], 
+                        'type'           => $row['packageType'], 
+                        'description'    => $row['packageDescription'],
+                        'pricePerPerson' => $row['pricePerPerson'],
+                        'status'         => $row['packageStatus'],
+                        'duration'       => $row['duration'],
+                        'agencyID'       => $row['agencyID']
+                    ];
+                }
             }
+
+            // remove keys and flatten
+            $resData = array_values($groupedDestinations);
 
             $this->sendResponse("success", $resData, 200);
 
@@ -628,21 +826,121 @@ class Database {
     }
 
     public function getAllAccomodations($data) {
+        $req_fields = ["accommodationType", "minRating", "minPrice", "maxPrice", "destination"];
+
+        foreach($req_fields as $val) {
+            if (!isset($data->$val)) {
+                    $this->sendResponse("error", "Missing field: " . $val . " in the request to makeRestaurant", 400);
+            }
+        }
+
         try {
             $sql = "
-                SELECT * 
-                FROM accommodation
+                SELECT
+                    a.*, 
+                    p.packageID, p.name AS packageName, p.type AS packageType, 
+                    p.description AS packageDescription, p.pricePerPerson, 
+                    p.status AS packageStatus, p.duration, p.agencyID,
+                    d.city, d.country
+                FROM accommodation AS a
+                LEFT JOIN package_accommodation AS pr ON a.accommodationID = pr.accommodationID
+                LEFT JOIN package AS p ON pr.packageID = p.packageID
+                LEFT JOIN destination AS d ON p.destinationID = d.destinationID
+                WHERE 1=1
             ";
 
+            $params = [];
+            $datatypes = "";
+
+            if (isset($data->accommodationType) && trim($data->accommodationType) !== "") {
+                $sql = $sql . " AND a.type = ?";
+                $params[] = $data->accommodationType;
+                $datatypes .= "s";
+            }
+
+            if (isset($data->minRating) && trim($data->minRating) !== "") {
+                $sql = $sql . " AND a.rating > ?";
+                $params[] = $data->minRating;
+                $datatypes .= "d";
+            }
+
+            if (isset($data->minPrice) && trim($data->minPrice) !== "") {
+                $sql = $sql . " AND a.pricePerNight > ?";
+                $params[] = $data->minPrice;
+                $datatypes .= "d";
+            }
+
+            if (isset($data->maxPrice) && trim($data->maxPrice) !== "") {
+                // $priceStmt = " AND (a.price = '$'";
+
+                // if ($data->maxPrice === "$$") {
+                //     $priceStmt .= " OR a.price = '$$'";
+                // } elseif ($data->maxPrice === "$$$") {
+                //     $priceStmt .= " OR a.price = '$$'  OR a.price = '$$$'";
+                // } elseif ($data->maxPrice === "$$$$") {
+                //     $priceStmt .= " OR a.price = '$$'  OR a.price = '$$$'  OR a.price = '$$$$'";
+                // }
+
+                // $priceStmt .= ")";
+
+                // $sql = $sql . $priceStmt;
+
+                $sql = $sql . " AND a.pricePerNight < ?";
+                $params[] = $data->maxPrice;
+                $datatypes .= "d";
+            }
+
+            if (!empty($data->destination) && trim($data->destination) !== "") {
+                $sql .= " AND (d.city LIKE ? OR d.country LIKE ? OR d.destinationID = ?)";
+                $params[] = "%" . $data->destination . "%";
+                $params[] = "%" . $data->destination . "%";
+                $params[] = $data->destination;
+                $datatypes .= "sss";
+            }
+
             $stmt = $this->conn->prepare($sql);
+            if (!empty($params)) {
+                $stmt->bind_param($datatypes, ...$params);
+            }
             $stmt->execute();
             $result = $stmt->get_result();
 
-            $resData = [];
+            $groupedAccommodations = [];
 
             while ($row = $result->fetch_assoc()) {
-                $resData[] = $row;
+                $accId = $row['accommodationID'];
+
+                // add the main accommodation if it doesn't exist yet
+                if (!isset($groupedAccommodations[$accId])) {
+                    $groupedAccommodations[$accId] = [
+                        'accommodationID' => $row['accommodationID'],
+                        'name'            => $row['name'],
+                        'type'            => $row['type'],
+                        'rating'          => $row['rating'],
+                        'pricePerNight'           => $row['pricePerNight'],
+                        'city'            => $row['city'],
+                        'country'         => $row['country'],
+                        'packages'        => [] // empty subarray
+                    ];
+                }
+
+                // if package exists add it to the subarray
+                if (!empty($row['packageID'])) {
+                    $groupedAccommodations[$accId]['packages'][] = [
+                        'packageID'      => $row['packageID'],
+                        'name'           => $row['packageName'], 
+                        'type'           => $row['packageType'], 
+                        'description'    => $row['packageDescription'],
+                        'pricePerPerson' => $row['pricePerPerson'],
+                        'status'         => $row['packageStatus'],
+                        'duration'       => $row['duration'],
+                        'agencyID'       => $row['agencyID']
+                    ];
+                }
             }
+
+            // make it not dict
+            $resData = array_values($groupedAccommodations);
 
             $this->sendResponse("success", $resData, 200);
 
@@ -653,20 +951,58 @@ class Database {
 
     public function getAllAttractions($data) {
         try {
+            // select now accomodates fot packages
             $sql = "
-                SELECT * 
-                FROM attraction
+                SELECT 
+                    a.*, 
+                    p.packageID, p.name AS packageName, p.type AS packageType, 
+                    p.description AS packageDescription, p.pricePerPerson, 
+                    p.status AS packageStatus, p.duration, p.agencyID
+                FROM attraction AS a
+                LEFT JOIN package_attraction AS pa 
+                    ON a.destinationID = pa.destinationID AND a.name = pa.name
+                LEFT JOIN package AS p 
+                    ON pa.packageID = p.packageID
             ";
 
             $stmt = $this->conn->prepare($sql);
             $stmt->execute();
             $result = $stmt->get_result();
 
-            $resData = [];
+            $groupedAttractions = [];
 
             while ($row = $result->fetch_assoc()) {
-                $resData[] = $row;
+                // group by comp key
+                $attrKey = $row['destinationID'] . '_' . $row['name'];
+                
+                // make main entry
+                if (!isset($groupedAttractions[$attrKey])) {
+                    $groupedAttractions[$attrKey] = [
+                        "name"          => $row["name"],
+                        "entryFee"      => $row["entryFee"],
+                        "description"   => $row["description"], 
+                        "destinationID" => $row["destinationID"],
+                        "packages"      => []
+                    ];
+                }
+            
+                // if package add to subarray
+                if (!empty($row['packageID'])) {
+                    $groupedAttractions[$attrKey]['packages'][] = [
+                        'packageID'      => $row['packageID'],
+                        'name'           => $row['packageName'], 
+                        'type'           => $row['packageType'], 
+                        'description'    => $row['packageDescription'], 
+                        'pricePerPerson' => $row['pricePerPerson'],
+                        'status'         => $row['packageStatus'],
+                        'duration'       => $row['duration'],
+                        'agencyID'       => $row['agencyID']
+                    ];
+                }
             }
+
+            // flatten to array from dictionary
+            $resData = array_values($groupedAttractions);
 
             $this->sendResponse("success", $resData, 200);
 

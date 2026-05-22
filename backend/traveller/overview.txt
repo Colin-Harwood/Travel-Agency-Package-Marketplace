@@ -332,61 +332,90 @@ SOMEONE CAN ONLY GET THEIR OWN BOOKINGS OTHERWISE AN ERROR WILL BE SENT
 
 ## ALL BASIC GETS LIKE FLIGHT ACCOMMODATION etc
 
-# ALL OF THESE ONLY TAKE THE TYPE AND APIKEY AND RETURN EVERYTHING FOR THAT TABLE
-
 ## getAllFlights
+
+Data is an array of all the flights by id and each has an array of the associated packages
+
+Make the strings empty (ie "") for no param and make the prices 0 for no param
+All fields are needed
 
 # Query
 
 {
     "type": "getAllFlights",
-    "apikey": "nQkleaCMsoTSDR7YOQ7BIP60ektVKshSS8GFfcBuqf91K8/R"
+    "apikey": "nQkleaCMsoTSDR7YOQ7BIP60ektVKshSS8GFfcBuqf91K8/R",
+    "startDate": "2026-10-04",
+    "endDate": "",
+    "airline": "Cathay",
+    "minPrice": 10000,
+    "maxPrice": 15000
 }
 
 #Response
 
 {
     "status": "success",
-    "timestamp": 1779370878,
+    "timestamp": 1779463447,
     "data": [
         {
-            "flightID": 1,
-            "airline": "Air France",
-            "flightNumber": "AF101",
+            "flightID": 48,
+            "airline": "Cathay Pacific",
+            "flightNumber": "CX234",
             "departureAirport": "OR Tambo International",
-            "arrivalAirport": "Charles de Gaulle",
-            "departureTime": "2026-07-01 08:00:00",
-            "arrivalTime": "2026-07-01 18:00:00",
-            "price": "12000.00"
-        },
-        {
-            "flightID": 2,
-            "airline": "Japan Airlines",
-            "flightNumber": "JL302",
-            "departureAirport": "OR Tambo International",
-            "arrivalAirport": "Narita International",
-            "departureTime": "2026-07-03 10:00:00",
-            "arrivalTime": "2026-07-04 06:00:00",
-            "price": "14000.00"
-        },
-    ...
+            "arrivalAirport": "Hong Kong International",
+            "departureTime": "2026-10-05 22:00:00",
+            "arrivalTime": "2026-10-06 14:00:00",
+            "price": "13800.00",
+            "packages": [
+                {
+                    "packageID": 23,
+                    "type": "City",
+                    "name": "Dubai Modern Marvel",
+                    "description": "Skyscrapers, luxury malls and desert safari in 6 days.",
+                    "pricePerPerson": "18000.00",
+                    "status": "Active",
+                    "duration": 6,
+                    "destinationID": 12,
+                    "agencyID": 11
+                },
+                {
+                    "packageID": 48,
+                    "type": "City",
+                    "name": "Dubai Shopping Festival Tour",
+                    "description": "Timed with the Dubai Shopping Festival for the ultimate retail trip.",
+                    "pricePerPerson": "21000.00",
+                    "status": "Draft",
+                    "duration": 7,
+                    "destinationID": 12,
+                    "agencyID": 13
+                }
+            ]
+        }
     ]
 }
 
 ## getAllAccommodations
 
+Any of the queries can be left empty same as above
+Destination can be city, country or id
+
 # Query
 
 {
     "type": "getAllAccommodations",
-    "apikey": "nQkleaCMsoTSDR7YOQ7BIP60ektVKshSS8GFfcBuqf91K8/R"
+    "apikey": "nQkleaCMsoTSDR7YOQ7BIP60ektVKshSS8GFfcBuqf91K8/R",
+    "accommodationType": "Hotel",
+    "minRating": 4.0,
+    "minPrice": "1000",
+    "maxPrice": "10000",
+    "destination": "1"
 }
 
 # Response
 
 {
     "status": "success",
-    "timestamp": 1779371291,
+    "timestamp": 1779467840,
     "data": [
         {
             "accommodationID": 1,
@@ -394,21 +423,27 @@ SOMEONE CAN ONLY GET THEIR OWN BOOKINGS OTHERWISE AN ERROR WILL BE SENT
             "type": "Hotel",
             "rating": "4.5",
             "pricePerNight": "3500.00",
-            "destinationID": 1
-        },
-        {
-            "accommodationID": 2,
-            "name": "Generator Paris",
-            "type": "Hostel",
-            "rating": "3.8",
-            "pricePerNight": "800.00",
-            "destinationID": 1
-        },
-        ...
+            "city": "Paris",
+            "country": "France",
+            "packages": [
+                {
+                    "packageID": 41,
+                    "name": "Paris Off the Beaten Track",
+                    "type": "Cultural",
+                    "description": "Hidden gems, local markets and authentic Parisian neighbourhood life.",
+                    "pricePerPerson": "18000.00",
+                    "status": "Inactive",
+                    "duration": 8,
+                    "agencyID": 13
+                }
+            ]
+        }
     ]
 }
 
 ## getAllDestinations
+
+Now returns stats and all of the associated packages
 
 # Query
 
@@ -421,20 +456,38 @@ SOMEONE CAN ONLY GET THEIR OWN BOOKINGS OTHERWISE AN ERROR WILL BE SENT
 
 {
     "status": "success",
-    "timestamp": 1779371628,
+    "timestamp": 1779479977,
     "data": [
         {
             "destinationID": 1,
             "country": "France",
             "city": "Paris",
-            "description": "The city of light, famous for the Eiffel Tower and haute cuisine."
-        },
-        {
-            "destinationID": 2,
-            "country": "Japan",
-            "city": "Tokyo",
-            "description": "A vibrant metropolis blending ultramodern and traditional culture."
-        },
+            "description": "The city of light, famous for the Eiffel Tower and haute cuisine.",
+            "stats": {
+                "packageCount": 3,
+                "agencyCount": 3,
+                "bookingCount": 3,
+                "upcomingTrips": 3,
+                "reviewCount": 5,
+                "minPrice": "15000.00",
+                "maxPrice": "28000.00",
+                "avgPrice": "18200.00",
+                "avgRating": 4
+            },
+            "packages": [
+                {
+                    "packageID": 1,
+                    "name": "Paris Classic Getaway",
+                    "type": "Cultural",
+                    "description": "Explore Parisian art, cuisine and iconic landmarks over 7 days.",
+                    "pricePerPerson": "15000.00",
+                    "status": "Active",
+                    "duration": 7,
+                    "agencyID": 11
+                },
+                ...
+            ]
+        }
         ...
     ]
 }
@@ -452,20 +505,26 @@ SOMEONE CAN ONLY GET THEIR OWN BOOKINGS OTHERWISE AN ERROR WILL BE SENT
 
 {
     "status": "success",
-    "timestamp": 1779371707,
+    "timestamp": 1779477104,
     "data": [
         {
             "name": "Eiffel Tower",
             "entryFee": "26.00",
             "description": "Iconic iron lattice tower on the Champ de Mars.",
-            "destinationID": 1
-        },
-        {
-            "name": "Louvre Museum",
-            "entryFee": "17.00",
-            "description": "The worlds largest art museum, housing the Mona Lisa.",
-            "destinationID": 1
-        },
+            "destinationID": 1,
+            "packages": [
+                {
+                    "packageID": 41,
+                    "name": "Paris Off the Beaten Track",
+                    "type": "Cultural",
+                    "description": "Hidden gems, local markets and authentic Parisian neighbourhood life.",
+                    "pricePerPerson": "18000.00",
+                    "status": "Inactive",
+                    "duration": 8,
+                    "agencyID": 13
+                }
+            ]
+        }
         ...
     ]
 }
@@ -483,21 +542,26 @@ SOMEONE CAN ONLY GET THEIR OWN BOOKINGS OTHERWISE AN ERROR WILL BE SENT
 
 {
     "status": "success",
-    "timestamp": 1779371763,
+    "timestamp": 1779475112,
     "data": [
         {
             "restaurantID": 1,
             "name": "Le Cinq",
             "priceRange": "$$$$",
             "cuisine": "French",
-            "destinationID": 1
-        },
-        {
-            "restaurantID": 2,
-            "name": "Septime",
-            "priceRange": "$$$",
-            "cuisine": "Modern French",
-            "destinationID": 1
+            "destinationID": 1,
+            "packages": [
+                {
+                    "packageID": 1,
+                    "name": "Paris Classic Getaway",
+                    "type": "Cultural",
+                    "description": "Explore Parisian art, cuisine and iconic landmarks over 7 days.",
+                    "pricePerPerson": "15000.00",
+                    "status": "Active",
+                    "duration": 7,
+                    "agencyID": 11
+                },
+            ]
         },
         ...
     ]
