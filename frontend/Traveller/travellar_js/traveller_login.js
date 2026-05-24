@@ -4,6 +4,12 @@ document.addEventListener("DOMContentLoaded", function () {
     var showPassword = document.getElementById("show-password");
     var passwordInput = document.getElementById("password");
 
+    var existingApiKey = TravelAPI.getApiKey();
+    if (existingApiKey && existingApiKey !== "") {
+        window.location.href = "packages.php";
+        return;
+    }
+
     if (showPassword && passwordInput) {
         showPassword.addEventListener("change", function () {
             passwordInput.type = showPassword.checked ? "text" : "password";
@@ -16,7 +22,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     loginForm.addEventListener("submit", function (event) {
         event.preventDefault();
-
         loginError.textContent = "";
 
         var email = document.getElementById("email").value.trim();
@@ -34,15 +39,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
-            if (response.status !== "success") {
-                loginError.textContent = response.message || response.data || "Login failed.";
+            if (!response || response.status !== "success") {
+                loginError.textContent = (response && response.message) || (response && response.data) || "Login failed.";
                 console.error(response);
                 return;
             }
 
-            localStorage.setItem("apiKey", response.data.apiKey);
-            localStorage.setItem("userID", response.data.userID);
-            localStorage.setItem("userType", response.data.userType);
+            if (response.data && response.data.apiKey) {
+                TravelAPI.saveApiKey(response.data.apiKey);
+            }
 
             window.location.href = "packages.php";
         });

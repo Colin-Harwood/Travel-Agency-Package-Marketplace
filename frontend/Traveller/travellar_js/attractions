@@ -1,0 +1,318 @@
+document.addEventListener("DOMContentLoaded", function () {
+    "use strict";
+
+    var messageDiv = document.getElementById("attractionsMessage");
+    var grid = document.getElementById("attractionsGrid");
+    var filterName = document.getElementById("filterName");
+    var filterDestination = document.getElementById("filterDestination");
+    var minPriceInput = document.getElementById("minPrice");
+    var maxPriceInput = document.getElementById("maxPrice");
+    var freeOnly = document.getElementById("freeOnly");
+    var sortSelect = document.getElementById("sortSelect");
+    var applyBtn = document.getElementById("applyFiltersBtn");
+    var resetBtn = document.getElementById("resetFiltersBtn");
+
+    var allAttractions = [];
+    var allDestinations = [];
+    var modal = document.getElementById("packageModal");
+    var modalList = document.getElementById("modalPackagesList");
+    var closeModalSpan = document.querySelector(".modal-close");
+
+    function setMessage(msg, isError) {
+        if (!messageDiv) return;
+        messageDiv.textContent = msg || "";
+        messageDiv.className = isError ? "attractions-message error" : "attractions-message";
+        messageDiv.style.display = msg ? "block" : "none";
+        if (!isError && msg) {
+            setTimeout(function () {
+                if (messageDiv) messageDiv.style.display = "none";
+            }, 5000);
+        }
+    }
+
+    function escapeHtml(value) {
+        return String(value === null || value === undefined ? "" : value).replace(/[&<>"']/g, function (m) {
+            return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[m];
+        });
+    }
+
+    function formatPrice(value) {
+        var num = parseFloat(value || 0);
+        if (isNaN(num)) num = 0;
+        return num.toLocaleString("en-ZA", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    }
+
+    function getDestinationName(attraction) {
+        if (attraction.city && attraction.country) {
+            return attraction.city + ", " + attraction.country;
+        } else if (attraction.city) {
+            return attraction.city;
+        } else if (attraction.country) {
+            return attraction.country;
+        }
+        return "";
+    }
+
+    function renderAttractionCard(attraction) {
+        var entryFee = parseFloat(attraction.entryFee) || 0;
+        var isFree = entryFee === 0;
+        var feeDisplay = isFree ? "Free" : "ZAR " + formatPrice(entryFee);
+        var feeClass = isFree ? "free" : "paid";
+        var packageCount = (attraction.packages && attraction.packages.length) ? attraction.packages.length : 0;
+        var description = attraction.description || "";
+        var shortDesc = description.length > 120 ? description.substring(0, 120) + "..." : description;
+
+        return '' +
+            '<article class="attraction-card" data-attraction-name="' + escapeHtml(attraction.name) + '" data-destination-id="' + escapeHtml(attraction.destinationID) + '">' +
+            '<div class="card-image-placeholder">' + escapeHtml(attraction.name) + '</div>' +
+            '<div class="card-content">' +
+            '<h3 class="card-title">' + escapeHtml(attraction.name) + '</h3>' +
+            '<div class="card-location">' + escapeHtml(getDestinationName(attraction)) + '</div>' +
+            '<p class="card-description">' + escapeHtml(shortDesc) + '</p>' +
+            '<div class="card-details">' +
+            '<div class="entry-fee ' + feeClass + '">' +
+            '<span class="fee-label">Entry fee</span>' +
+            '<span class="fee-value">' + feeDisplay + '</span>' +
+            '</div>' +
+            (packageCount > 0 ?
+                '<div class="package-count" data-attraction-name="' + escapeHtml(attraction.name) + '" data-destination-id="' + escapeHtml(attraction.destinationID) + '">' + packageCount + ' package(s) include this</div>' :
+                '<div class="package-count no-packages">No packages include this attraction</div>'
+            ) +
+            '</div>' +
+            '</div>' +
+            '</article>';
+    }
+
+    function filterAndSortAttractions() {
+        if (!allAttractions.length) return [];
+
+        var nameSearch = filterName ? filterName.value.trim().toLowerCase() : "";
+        var destSearch = filterDestination ? filterDestination.value.trim().toLowerCase() : "";
+        var minPrice = minPriceInput && minPriceInput.value !== "" ? parseFloat(minPriceInput.value) : -1;
+        var maxPrice = maxPriceInput && maxPriceInput.value !== "" ? parseFloat(maxPriceInput.value) : Infinity;
+        var freeFilter = freeOnly ? freeOnly.value : "";
+
+        var filtered = allAttractions.filter(function (att) {
+            var matchesName = true;
+            if (nameSearch !== "") {
+                matchesName = (att.name || "").toLowerCase().includes(nameSearch);
+            }
+
+            var matchesDest = true;
+            if (destSearch !== "") {
+                var city = (att.city || "").toLowerCase();
+                var country = (att.country || "").toLowerCase();
+                matchesDest = city.includes(destSearch) || country.includes(destSearch);
+            }
+
+            var entryFee = parseFloat(att.entryFee) || 0;
+            var matchesPrice = true;
+            if (minPrice >= 0) {
+                matchesPrice = entryFee >= minPrice;
+            }
+            if (matchesPrice && maxPrice !== Infinity) {
+                matchesPrice = entryFee <= maxPrice;
+            }
+
+            var matchesFree = true;
+            if (freeFilter === "free") {
+                matchesFree = entryFee === 0;
+            } else if (freeFilter === "paid") {
+                matchesFree = entryFee > 0;
+            }
+
+            return matchesName && matchesDest && matchesPrice && matchesFree;
+        });
+
+        var sortValue = sortSelect ? sortSelect.value : "default";
+        if (sortValue === "name_asc") {
+            filtered.sort(function (a, b) { return (a.name || "").localeCompare(b.name || ""); });
+        } else if (sortValue === "name_desc") {
+            filtered.sort(function (a, b) { return (b.name || "").localeCompare(a.name || ""); });
+        } else if (sortValue === "fee_asc") {
+            filtered.sort(function (a, b) { return (parseFloat(a.entryFee) || 0) - (parseFloat(b.entryFee) || 0); });
+        } else if (sortValue === "fee_desc") {
+            filtered.sort(function (a, b) { return (parseFloat(b.entryFee) || 0) - (parseFloat(a.entryFee) || 0); });
+        } else if (sortValue === "packages_desc") {
+            filtered.sort(function (a, b) {
+                var countA = (a.packages && a.packages.length) || 0;
+                var countB = (b.packages && b.packages.length) || 0;
+                return countB - countA;
+            });
+        } else {
+            filtered.sort(function (a, b) { return (a.name || "").localeCompare(b.name || ""); });
+        }
+
+        return filtered;
+    }
+
+    function applyFiltersAndRender() {
+        var filtered = filterAndSortAttractions();
+        if (filtered.length === 0) {
+            grid.innerHTML = '<div class="empty-state">No attractions match your filters. Try adjusting the criteria.</div>';
+            setMessage("", false);
+        } else {
+            grid.innerHTML = filtered.map(renderAttractionCard).join("");
+            setMessage("", false);
+            attachPackageClickHandlers();
+        }
+    }
+
+    function attachPackageClickHandlers() {
+        var packageCountDivs = document.querySelectorAll(".package-count[data-attraction-name]");
+        for (var i = 0; i < packageCountDivs.length; i++) {
+            packageCountDivs[i].onclick = function () {
+                var name = this.getAttribute("data-attraction-name");
+                var destId = this.getAttribute("data-destination-id");
+                showPackagesForAttraction(name, destId);
+            };
+        }
+    }
+
+    function showPackagesForAttraction(name, destId) {
+        if (!modal || !modalList) return;
+
+        var attraction = null;
+        for (var i = 0; i < allAttractions.length; i++) {
+            if (allAttractions[i].name === name && String(allAttractions[i].destinationID) === String(destId)) {
+                attraction = allAttractions[i];
+                break;
+            }
+        }
+
+        if (!attraction || !attraction.packages || attraction.packages.length === 0) {
+            modalList.innerHTML = '<p class="no-packages">No packages currently include this attraction.</p>';
+            modal.style.display = "block";
+            return;
+        }
+
+        var html = '<ul class="package-list">';
+        for (var j = 0; j < attraction.packages.length; j++) {
+            var p = attraction.packages[j];
+            var statusBadge = p.status === "Active" ? "" : '<span class="package-status-inactive"> (' + escapeHtml(p.status) + ')</span>';
+            html += '<li class="package-list-item">' +
+                '<a href="package_view.php?id=' + escapeHtml(p.packageID) + '" class="package-link">' +
+                '<strong>' + escapeHtml(p.name) + '</strong>' +
+                '<span class="package-type">(' + escapeHtml(p.type) + ')</span>' +
+                statusBadge +
+                '</a>' +
+                '<div class="package-details">' +
+                '<span class="package-price">ZAR ' + formatPrice(p.pricePerPerson) + ' per person</span>' +
+                '<span class="package-duration"> ' + escapeHtml(p.duration) + ' days</span>' +
+                '</div>' +
+                '</li>';
+        }
+        html += '</ul>';
+
+        modalList.innerHTML = html;
+        modal.style.display = "block";
+    }
+
+    function closeModal() {
+        if (modal) modal.style.display = "none";
+    }
+
+    function loadDestinations(callback) {
+        TravelAPI.getAllDestinations(function (err, response) {
+            if (!err && response && response.status === "success") {
+                allDestinations = response.data;
+                var destMap = {};
+                for (var i = 0; i < allDestinations.length; i++) {
+                    destMap[allDestinations[i].destinationID] = {
+                        city: allDestinations[i].city,
+                        country: allDestinations[i].country
+                    };
+                }
+                for (var j = 0; j < allAttractions.length; j++) {
+                    var destInfo = destMap[allAttractions[j].destinationID];
+                    if (destInfo) {
+                        allAttractions[j].city = destInfo.city;
+                        allAttractions[j].country = destInfo.country;
+                    }
+                }
+            }
+            if (callback) callback();
+        });
+    }
+
+    function loadAttractions() {
+        var apiKey = TravelAPI.getApiKey();
+        if (!apiKey) {
+            setMessage("Please log in first to view attractions.", true);
+            grid.innerHTML = '<div class="empty-state">Please <a href="traveller_login.php">login</a> to view attractions.</div>';
+            return;
+        }
+
+        setMessage("Loading attractions...", false);
+        grid.innerHTML = '<div class="loading">Loading attractions...</div>';
+
+        TravelAPI.getAllAttractions(function (err, response) {
+            if (err) {
+                setMessage(err.message, true);
+                grid.innerHTML = '<div class="empty-state">' + escapeHtml(err.message) + '</div>';
+                return;
+            }
+
+            if (response && response.status === "success") {
+                var attractions = response.data;
+                if (!attractions || attractions.length === 0) {
+                    allAttractions = [];
+                    grid.innerHTML = '<div class="empty-state">No attractions were found in the database.</div>';
+                    setMessage("", false);
+                    return;
+                }
+
+                allAttractions = attractions;
+                loadDestinations(function () {
+                    applyFiltersAndRender();
+                });
+            } else {
+                var errorMsg = (response && response.data) || "Failed to load attractions.";
+                setMessage(errorMsg, true);
+                grid.innerHTML = '<div class="empty-state">' + escapeHtml(errorMsg) + '</div>';
+            }
+        });
+    }
+
+    function resetFilters() {
+        if (filterName) filterName.value = "";
+        if (filterDestination) filterDestination.value = "";
+        if (minPriceInput) minPriceInput.value = "";
+        if (maxPriceInput) maxPriceInput.value = "";
+        if (freeOnly) freeOnly.value = "";
+        if (sortSelect) sortSelect.value = "default";
+        applyFiltersAndRender();
+        setMessage("Filters reset.", false);
+    }
+
+    if (applyBtn) applyBtn.addEventListener("click", applyFiltersAndRender);
+    if (resetBtn) resetBtn.addEventListener("click", resetFilters);
+
+    if (filterName) {
+        var debounceTimer;
+        filterName.addEventListener("input", function () {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(applyFiltersAndRender, 300);
+        });
+    }
+
+    if (filterDestination) {
+        var destDebounceTimer;
+        filterDestination.addEventListener("input", function () {
+            clearTimeout(destDebounceTimer);
+            destDebounceTimer = setTimeout(applyFiltersAndRender, 300);
+        });
+    }
+
+    if (minPriceInput) minPriceInput.addEventListener("input", applyFiltersAndRender);
+    if (maxPriceInput) maxPriceInput.addEventListener("input", applyFiltersAndRender);
+    if (freeOnly) freeOnly.addEventListener("change", applyFiltersAndRender);
+    if (sortSelect) sortSelect.addEventListener("change", applyFiltersAndRender);
+
+    if (closeModalSpan) closeModalSpan.onclick = closeModal;
+    window.onclick = function (e) {
+        if (e.target === modal) closeModal();
+    };
+
+    loadAttractions();
+});

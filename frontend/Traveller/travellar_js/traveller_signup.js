@@ -4,6 +4,12 @@ document.addEventListener("DOMContentLoaded", function () {
     var showPassword = document.getElementById("show-password");
     var passwordInput = document.getElementById("password");
 
+    var existingApiKey = TravelAPI.getApiKey();
+    if (existingApiKey && existingApiKey !== "") {
+        window.location.href = "packages.php";
+        return;
+    }
+
     if (showPassword && passwordInput) {
         showPassword.addEventListener("change", function () {
             passwordInput.type = showPassword.checked ? "text" : "password";
@@ -16,7 +22,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     signupForm.addEventListener("submit", function (event) {
         event.preventDefault();
-
         errorMessage.textContent = "";
 
         var firstName = document.getElementById("name").value.trim();
@@ -37,17 +42,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
-            if (response.status !== "success") {
-                errorMessage.textContent = response.message || response.data || "Registration failed.";
+            if (!response || response.status !== "success") {
+                errorMessage.textContent = (response && response.message) || (response && response.data) || "Registration failed.";
                 console.error(response);
                 return;
             }
 
-            localStorage.setItem("apiKey", response.data.apiKey);
-            localStorage.setItem("userID", response.data.userID);
-            localStorage.setItem("userType", response.data.userType);
-
-            alert("Account created successfully.");
+            if (response.data && response.data.apiKey) {
+                TravelAPI.saveApiKey(response.data.apiKey);
+            }
 
             window.location.href = "packages.php";
         });
