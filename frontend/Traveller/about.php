@@ -5,7 +5,7 @@ include "header.php";
 <main class="about-main">
     <h1 class="section-title">ABOUT TRIPISTRY</h1>
     <div class="about-text">
-        <p>Welcome to Tripistry, your gateway to seamless travel experiences. We aggregate the best flights, accommodations, restaurants, and attractions from thousands of global providers to help you plan the perfect journey.</p>
+        <p>Welcome to Tripistry, your gateway to seamless travel experiences. We aggregate the best flights, accommodations, restaurants, and attractions to help you plan the perfect journey.</p>
     </div>
 
     <h2 class="section-title">FREQUENTLY ASKED QUESTIONS</h2>
