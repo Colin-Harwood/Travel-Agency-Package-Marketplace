@@ -326,6 +326,21 @@ var TravelAPI = (function () {
         }, callback);
     }
 
+    function profileUpdate(email, password, callback) {
+        var apiKey = getApiKey();
+        if (!apiKey) {
+            callback(new Error("Please log in first."), null);
+            return;
+        }
+        
+        sendRequest(LOGIN_API_URL, {
+            type: "profileUpdate",
+            apiKey: apiKey,
+            email: email,
+            password: password
+        }, callback);
+    }
+
     return {
         travellerRegister: travellerRegister,
         travellerLogin: travellerLogin,
@@ -346,6 +361,7 @@ var TravelAPI = (function () {
         getAllDestinations: getAllDestinations,
         getAllRestaurants: getAllRestaurants,
         deleteReview: deleteReview,
-        getAllReviews: getAllReviews
+        getAllReviews: getAllReviews,
+        profileUpdate: profileUpdate
     };
 })();

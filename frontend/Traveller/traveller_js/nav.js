@@ -8,7 +8,7 @@
 
     function updateNavVisibility() {
         var loggedIn = isLoggedIn();
-        var loggedInItems = ["nav-flights", "nav-packages", "nav-desti", "nav-bookings", "nav-accom", "nav-attrac", "nav-about", "nav-logout", "nav-attrac", "nav-rest"];
+        var loggedInItems = ["nav-flights", "nav-packages", "nav-desti", "nav-bookings", "nav-accom", "nav-attrac", "nav-about", "nav-logout", "nav-attrac", "nav-rest","nav-prof"];
         var loggedOutItems = ["nav-login", "nav-signup"];
         for (var i = 0; i < loggedInItems.length; i++) {
             var el = document.getElementById(loggedInItems[i]);

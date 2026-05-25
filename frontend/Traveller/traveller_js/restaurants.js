@@ -72,7 +72,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         return '' +
             '<article class="restaurant-card" data-restaurant-id="' + escapeHtml(restaurant.restaurantID) + '">' +
-            '<div class="card-image-placeholder">' + escapeHtml(restaurant.name) + '</div>' +
             '<div class="card-content">' +
             '<h3 class="card-title">' + escapeHtml(restaurant.name) + '</h3>' +
             (location ? '<div class="card-location">' + escapeHtml(location) + '</div>' : '') +

@@ -46,15 +46,30 @@ document.addEventListener("DOMContentLoaded", function () {
         return num.toLocaleString("en-ZA", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
     }
 
+    function getImageUrl(imageURL) {
+        if (!imageURL || imageURL === "") {
+            return null;
+        }
+        return imageURL;
+    }
+
     function renderPackageCard(pkg) {
         var detailUrl = "package_view.php?id=" + encodeURIComponent(pkg.packageID);
         var location = [pkg.destinationCity, pkg.destinationCountry].filter(Boolean).join(", ");
         var agency = pkg.agencyName ? "By " + pkg.agencyName : "Agency not listed";
         var status = pkg.status || "Unknown";
-
+        
+        var imageHtml = '';
+        var imageUrl = getImageUrl(pkg.imageURL);
+        
+        if (imageUrl) {
+            imageHtml = '<img class="card-image" src="' + escapeHTML(imageUrl) + '" alt="' + escapeHTML(pkg.name || "Package image") + '" onerror="this.onerror=null; this.src=\'\'; this.parentElement.innerHTML=\'<div class=\\\'card-image-placeholder\\\'>' + escapeHTML(pkg.name || "Package") + '</div>\'">';
+        } else {
+            imageHtml = '<div class="card-image-placeholder">' + escapeHTML(pkg.name || "Package") + '</div>';
+        }
         return '<article class="package-card" data-package-id="' + escapeHTML(pkg.packageID) + '">' +
             '<a class="card-link" href="' + detailUrl + '">' +
-            '<div class="card-image-placeholder">' + escapeHTML(pkg.name) + '</div>' +
+            '<div class="card-image-container">' + imageHtml + '</div>' +
             '<div class="card-content">' +
             '<div class="card-type-row">' +
             '<span>' + escapeHTML(pkg.type || "Package") + ' Package</span>' +
@@ -62,7 +77,7 @@ document.addEventListener("DOMContentLoaded", function () {
             '</div>' +
             '<h3 class="card-title">' + escapeHTML(pkg.name || "Unnamed package") + '</h3>' +
             '<div class="card-location">' + escapeHTML(location || "Destination not listed") + '</div>' +
-            '<p class="card-description">' + escapeHTML(pkg.description || "") + '</p>' +
+            '<p class="card-description">' + escapeHTML((pkg.description || "").substring(0, 120) + ((pkg.description || "").length > 120 ? "..." : "")) + '</p>' +
             '<div class="card-rating">' +
             '<div class="rating-text">' +
             '<span class="rating-word"><br></span>' +
@@ -78,14 +93,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function renderPackages() {
         if (!allPackages.length) {
-            grid.innerHTML = '<div class="loading">Loading packages...</div>';
             return;
         }
-
         var destinationText = filterDestination ? filterDestination.value.trim().toLowerCase() : "";
         var minPrice = minPriceInput && minPriceInput.value !== "" ? parseFloat(minPriceInput.value) : 0;
         var maxPrice = maxPriceInput && maxPriceInput.value !== "" ? parseFloat(maxPriceInput.value) : Infinity;
-
         var filtered = allPackages.filter(function (pkg) {
             var matchesDest = true;
             if (destinationText !== "") {
@@ -97,7 +109,6 @@ document.addEventListener("DOMContentLoaded", function () {
             var matchesPrice = price >= minPrice && price <= maxPrice;
             return matchesDest && matchesPrice;
         });
-
         var sortValue = sortSelect ? sortSelect.value : "default";
         if (sortValue === "price_asc") {
             filtered.sort(function (a, b) { return parseFloat(a.pricePerPerson) - parseFloat(b.pricePerPerson); });
@@ -106,7 +117,6 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             filtered.sort(function (a, b) { return a.packageID - b.packageID; });
         }
-
         if (filtered.length === 0) {
             if (destinationText) {
                 grid.innerHTML = '<div class="empty-state">No packages found for "' + escapeHTML(destinationText) + '".</div>';
@@ -125,17 +135,12 @@ document.addEventListener("DOMContentLoaded", function () {
             grid.innerHTML = '<div class="empty-state">Please <a href="traveller_login.php">login</a> to view packages.</div>';
             return;
         }
-
-        setMessage("Loading packages...", false);
-        grid.innerHTML = '<div class="loading">Loading packages...</div>';
-
         TravelAPI.getAllPackages({ limit: 1000 }, function (err, response) {
             if (err) {
                 setMessage(err.message, true);
                 grid.innerHTML = '<div class="empty-state">Failed to load packages.</div>';
                 return;
             }
-
             var packages = [];
             if (response && response.status === "success") {
                 if (Array.isArray(response.data)) {
@@ -144,24 +149,19 @@ document.addEventListener("DOMContentLoaded", function () {
                     packages = response.data.data;
                 }
             }
-
             if (!packages || packages.length === 0) {
                 allPackages = [];
                 grid.innerHTML = '<div class="empty-state">No packages were found.</div>';
                 return;
             }
-
             allPackages = packages;
-
             var urlDestination = getQueryParam("destination");
             console.log("URL Destination:", urlDestination);
-
             if (urlDestination && filterDestination) {
                 filterDestination.value = urlDestination;
                 setMessage("Showing packages for " + urlDestination, false);
                 console.log("Filter set to:", filterDestination.value);
             }
-
             renderPackages();
         });
     }
@@ -171,10 +171,8 @@ document.addEventListener("DOMContentLoaded", function () {
         if (minPriceInput) minPriceInput.value = "";
         if (maxPriceInput) maxPriceInput.value = "";
         if (sortSelect) sortSelect.value = "default";
-
         var newUrl = window.location.pathname;
         window.history.pushState({}, "", newUrl);
-
         renderPackages();
         setMessage("Filters reset.", false);
     }

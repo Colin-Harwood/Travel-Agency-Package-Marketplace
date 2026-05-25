@@ -46,11 +46,9 @@ document.addEventListener("DOMContentLoaded", function () {
         var halfStar = (rating % 1) >= 0.5;
         var emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
         var stars = "";
-
         for (var i = 0; i < fullStars; i++) stars += "&#9733";
         if (halfStar) stars += "&frac12";
         for (var i = 0; i < emptyStars; i++) stars += "&#9734";
-
         return stars;
     }
 
@@ -58,7 +56,6 @@ document.addEventListener("DOMContentLoaded", function () {
         var rating = parseFloat(acc.rating) || 0;
         var packageCount = (acc.packages && acc.packages.length) ? acc.packages.length : 0;
         var location = "";
-
         if (acc.city && acc.country) {
             location = acc.city + ", " + acc.country;
         } else if (acc.city) {
@@ -66,10 +63,8 @@ document.addEventListener("DOMContentLoaded", function () {
         } else if (acc.country) {
             location = acc.country;
         }
-
         return '' +
             '<article class="accommodation-card" data-accommodation-id="' + escapeHtml(acc.accommodationID) + '">' +
-            '<div class="card-image-placeholder">' + escapeHtml(acc.name) + '</div>' +
             '<div class="card-content">' +
             '<span class="card-type">' + escapeHtml(acc.type || "") + '</span>' +
             '<h3 class="card-title">' + escapeHtml(acc.name || "Unnamed") + '</h3>' +
@@ -89,13 +84,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function filterAndSortAccommodations() {
         if (!allAccommodations.length) return [];
-
         var destination = filterDestination ? filterDestination.value.trim().toLowerCase() : "";
         var type = filterType ? filterType.value : "";
         var minRatingVal = minRating && minRating.value ? parseFloat(minRating.value) : 0;
         var minPriceVal = minPriceInput && minPriceInput.value !== "" ? parseFloat(minPriceInput.value) : 0;
         var maxPriceVal = maxPriceInput && maxPriceInput.value !== "" ? parseFloat(maxPriceInput.value) : Infinity;
-
         var filtered = allAccommodations.filter(function (acc) {
             var matchesDest = true;
             if (destination !== "") {
@@ -104,16 +97,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 var idMatch = String(acc.accommodationID).toLowerCase().includes(destination);
                 matchesDest = city.includes(destination) || country.includes(destination) || idMatch;
             }
-
             var matchesType = (type === "" || acc.type === type);
             var accRating = parseFloat(acc.rating) || 0;
             var matchesRating = accRating >= minRatingVal;
             var price = parseFloat(acc.pricePerNight);
             var matchesPrice = price >= minPriceVal && price <= maxPriceVal;
-
             return matchesDest && matchesType && matchesRating && matchesPrice;
         });
-
         var sortValue = sortSelect ? sortSelect.value : "default";
         if (sortValue === "price_asc") {
             filtered.sort(function (a, b) { return parseFloat(a.pricePerNight) - parseFloat(b.pricePerNight); });
@@ -126,7 +116,6 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             filtered.sort(function (a, b) { return a.accommodationID - b.accommodationID; });
         }
-
         return filtered;
     }
 
@@ -154,7 +143,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function showPackagesForAccommodation(accId) {
         if (!modal || !modalList) return;
-
         var accommodation = null;
         for (var i = 0; i < allAccommodations.length; i++) {
             if (String(allAccommodations[i].accommodationID) === String(accId)) {
@@ -162,13 +150,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 break;
             }
         }
-
         if (!accommodation || !accommodation.packages || accommodation.packages.length === 0) {
             modalList.innerHTML = '<p class="no-packages">No packages currently include this accommodation.</p>';
             modal.style.display = "block";
             return;
         }
-
         var html = '<ul class="package-list">';
         for (var j = 0; j < accommodation.packages.length; j++) {
             var p = accommodation.packages[j];
@@ -186,7 +172,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 '</li>';
         }
         html += '</ul>';
-
         modalList.innerHTML = html;
         modal.style.display = "block";
     }
@@ -198,21 +183,18 @@ document.addEventListener("DOMContentLoaded", function () {
     function loadAccommodations() {
         var apiKey = TravelAPI.getApiKey();
         if (!apiKey) {
-            setMessage("Please log in first. The API requires your traveller apikey.", true);
+            setMessage("Please log in first.", true);
             grid.innerHTML = '<div class="empty-state">Please <a href="traveller_login.php">login</a> to view accommodations.</div>';
             return;
         }
-
         setMessage("Loading accommodations...", false);
         grid.innerHTML = '<div class="loading">Loading accommodations...</div>';
-
         TravelAPI.getAllAccommodations({}, function (err, response) {
             if (err) {
                 setMessage(err.message, true);
                 grid.innerHTML = '<div class="empty-state">' + escapeHtml(err.message) + '</div>';
                 return;
             }
-
             if (response && response.status === "success") {
                 var accommodations = response.data;
                 if (!accommodations || accommodations.length === 0) {
