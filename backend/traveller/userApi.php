@@ -495,7 +495,7 @@ class Database {
             $sqlQueuery = "
                 SELECT * FROM `order` AS o
                 JOIN package AS p ON o.packageID = p.packageID
-                WHERE o.userID = ?
+                WHERE o.userID = ? AND o.status <> 'Cancelled'
             ";
 
             $stmt = $this->conn->prepare($sqlQueuery);
