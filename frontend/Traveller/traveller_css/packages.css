@@ -50,32 +50,6 @@ body {
   transform: translateY(-5px);
 }
 
-.fav-btn {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid #dddddd;
-  color: #999999;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 1.2rem;
-  z-index: 10;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.fav-btn:hover {
-  background: #f80000;
-  color: white;
-  border-color: #f80000;
-}
-
 .card-image-placeholder {
   height: 160px;
   background: linear-gradient(135deg, #e9ecef, #ced4da);
@@ -135,24 +109,10 @@ body {
   margin-bottom: 12px;
 }
 
-.rating-score {
-  background-color: #f80000;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-weight: bold;
-  font-size: 0.9rem;
-}
-
 .rating-text {
   font-size: 0.85rem;
   display: flex;
   flex-direction: column;
-}
-
-.rating-word {
-  font-weight: bold;
-  color: #111111;
 }
 
 .rating-count {
@@ -329,4 +289,153 @@ body {
     flex-direction: row;
     justify-content: flex-start;
   }
+}
+
+.packages-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.package-card {
+    border: 1px solid #e0e0e0;
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.package-card:hover {
+    border-color: #f80000;
+    box-shadow: 0 12px 28px rgba(248, 0, 0, 0.15);
+    transform: translateY(-8px);
+}
+
+.card-image-container {
+    width: 100%;
+    height: 220px;
+    overflow: hidden;
+    position: relative;
+    background: linear-gradient(135deg, #e9ecef, #ced4da);
+}
+
+.card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.package-card:hover .card-image {
+    transform: scale(1.08);
+}
+
+.card-image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Rajdhani", sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #666666;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, #f5f7fa, #e9ecef);
+    text-align: center;
+    padding: 20px;
+}
+
+.card-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.card-type-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 0.75rem;
+    color: #f80000;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+    font-weight: bold;
+}
+
+.badge {
+    background: #f0f0f0;
+    color: #666;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+}
+
+.card-title {
+    font-family: "Rajdhani", sans-serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #111111;
+    margin-bottom: 8px;
+    line-height: 1.3;
+}
+
+.card-location {
+    font-size: 0.85rem;
+    color: #777777;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.card-location::before {
+    font-size: 0.75rem;
+}
+
+.card-description {
+    font-size: 0.85rem;
+    color: #555555;
+    line-height: 1.5;
+    margin-bottom: 15px;
+}
+
+.card-price-row {
+    margin-top: auto;
+    text-align: right;
+    font-size: 0.85rem;
+    color: #666666;
+    padding-top: 12px;
+    border-top: 1px solid #eeeeee;
+}
+
+.card-price {
+    display: inline-block;
+    font-family: "Rajdhani", sans-serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #f80000;
+    margin-left: 8px;
+}
+
+@media (max-width: 768px) {
+    .packages-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+    }
+    
+    .card-image-container {
+        height: 180px;
+    }
+    
+    .card-title {
+        font-size: 1.1rem;
+    }
 }
