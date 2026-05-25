@@ -451,16 +451,3 @@ body {
   }
 }
 
-@media (max-width: 480px) {
-  .hero-section h1 {
-    font-size: 1.4rem;
-  }
-
-  .hero-section p {
-    font-size: 0.85rem;
-  }
-
-  .filter-bar {
-    padding: 15px;
-  }
-}

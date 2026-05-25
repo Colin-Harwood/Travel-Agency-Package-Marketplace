@@ -582,26 +582,3 @@ body {
     padding: 20px;
   }
 }
-
-@media (max-width: 480px) {
-  .hero-section h1 {
-    font-size: 1.4rem;
-  }
-
-  .hero-section p {
-    font-size: 0.85rem;
-  }
-
-  .filter-bar {
-    padding: 15px;
-  }
-
-  .modal-stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-  }
-
-  .modal-stat-value {
-    font-size: 1.4rem;
-  }
-}
