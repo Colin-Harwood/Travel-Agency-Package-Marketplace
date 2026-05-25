@@ -27,6 +27,10 @@ SET time_zone = "+00:00";
 -- Table structure for table `accommodation`
 --
 
+DROP DATABASE IF EXISTS tripistry_data;
+CREATE DATABASE tripistry_data CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE tripistry_data;
+
 CREATE TABLE `accommodation` (
   `accommodationID` int(11) NOT NULL,
   `name` varchar(150) NOT NULL,
