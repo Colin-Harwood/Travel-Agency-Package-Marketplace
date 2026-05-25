@@ -84,7 +84,7 @@ class Database {
             // base queuery and usiny 1=1 so the appending is easier
             $sqlMain = "
                 SELECT 
-                    p.packageID, p.name, p.type, p.description, p.pricePerPerson, p.duration, p.status,
+                    p.packageID, p.name, p.type, p.description, p.pricePerPerson, p.duration, p.imageURL, p.status,
                     d.city AS destinationCity, d.country AS destinationCountry,
                     ta.name AS agencyName, u.emailAddress AS email, u.phoneNumber AS phone,
                     ta.street, ta.city AS agencyCity
@@ -227,7 +227,7 @@ class Database {
             // fetch main package and agency first
             $sqlMain = "
                 SELECT 
-                    p.packageID, p.name, p.type, p.description, p.pricePerPerson, p.duration, p.status,
+                    p.packageID, p.name, p.type, p.description, p.pricePerPerson, p.duration, p.imageURL,p.status,
                     d.city AS destinationCity, d.country AS destinationCountry,
                     ta.name AS agencyName, u.emailAddress AS email, u.phoneNumber AS phone,
                     ta.street, ta.city AS agencyCity
@@ -495,7 +495,7 @@ class Database {
             $sqlQueuery = "
                 SELECT * FROM `order` AS o
                 JOIN package AS p ON o.packageID = p.packageID
-                WHERE o.userID = ?
+                WHERE o.userID = ? AND o.status <> 'Cancelled'
             ";
 
             $stmt = $this->conn->prepare($sqlQueuery);
