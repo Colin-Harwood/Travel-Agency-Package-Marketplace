@@ -1,11 +1,10 @@
-const API_URL = "http://localhost/COS-221-PA5/Travel-Agency-Package-Marketplace/backend/Agency_code/agencyAPI.php";
-
+const API_URL = "http://localhost/COS-221-PA5/Travel-Agency-Package-Marketplace/backend/Agency_code/agencyAPI.php";// api url
+// when the HTML loads
 document.addEventListener("DOMContentLoaded", function () {
+    // get the data fromthe frontend to send in th API
     const form = document.getElementById("createGroupTripForm");
     const messageBox = document.getElementById("messageBox");
-
     const packageSelect = document.getElementById("packageID");
-
     const packageName = document.getElementById("packageName");
     const packagePrice = document.getElementById("packagePrice");
     const packageDuration = document.getElementById("packageDuration");
@@ -13,17 +12,14 @@ document.addEventListener("DOMContentLoaded", function () {
     const packageDescription = document.getElementById("packageDescription");
 
     let packages = [];
-
     loadPackages();
-
     packageSelect.addEventListener("change", function () {
         displaySelectedPackage();
     });
-
+    // for the button to reset the form data
     form.addEventListener("reset", function () {
         messageBox.textContent = "";
         messageBox.className = "";
-
         setTimeout(function () {
             packageName.value = "";
             packagePrice.value = "";
@@ -32,30 +28,27 @@ document.addEventListener("DOMContentLoaded", function () {
             packageDescription.value = "";
         }, 0);
     });
-
+    // submit data button
     form.addEventListener("submit", function (event) {
         event.preventDefault();
-
         messageBox.textContent = "";
         messageBox.className = "";
-
         const agencyID = localStorage.getItem("userID");
-
+        // some validation
         if (!agencyID) {
             showMessage("You must be logged in to create a group trip.", "error");
             return;
         }
 
         const groupTripData = {
-            action: "create_group_trip",
+            action: "create_group_trip",//the api to be used
             agencyID: parseInt(agencyID),
             packageID: parseInt(packageSelect.value),
             maxSize: parseInt(document.getElementById("maxSize").value),
             tripDate: document.getElementById("tripDate").value
         };
 
-        if (
-            isNaN(groupTripData.agencyID) ||
+        if (isNaN(groupTripData.agencyID) ||
             isNaN(groupTripData.packageID) ||
             isNaN(groupTripData.maxSize) ||
             groupTripData.tripDate === ""
@@ -63,17 +56,15 @@ document.addEventListener("DOMContentLoaded", function () {
             showMessage("Please fill in all fields correctly.", "error");
             return;
         }
-
         if (groupTripData.packageID <= 0) {
             showMessage("Please select a valid package.", "error");
             return;
         }
-
         if (groupTripData.maxSize <= 0) {
             showMessage("Maximum group size must be at least 1.", "error");
             return;
         }
-
+        // sending the data to the API to ceate a group trip
         fetch(API_URL, {
             method: "POST",
             headers: {
@@ -89,17 +80,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 showMessage(data.data || "Could not create group trip.", "error");
                 return;
             }
-
             showMessage(data.data.message + " Trip ID: " + data.data.tripID, "success");
-
             form.reset();
-
             packageName.value = "";
             packagePrice.value = "";
             packageDuration.value = "";
             packageStatus.value = "";
             packageDescription.value = "";
-
             loadPackages();
         })
         .catch(function (error) {
@@ -107,17 +94,14 @@ document.addEventListener("DOMContentLoaded", function () {
             showMessage("Something went wrong while creating the group trip.", "error");
         });
     });
-
+    // load packages to UI
     function loadPackages() {
         const agencyID = localStorage.getItem("userID");
-
         packageSelect.innerHTML = "";
-
         const loadingOption = document.createElement("option");
         loadingOption.value = "";
         loadingOption.textContent = "Loading packages...";
         packageSelect.appendChild(loadingOption);
-
         if (!agencyID) {
             packageSelect.innerHTML = "";
 
@@ -129,7 +113,7 @@ document.addEventListener("DOMContentLoaded", function () {
             showMessage("You must be logged in to load packages.", "error");
             return;
         }
-
+        // get packages api req
         fetch(API_URL, {
             method: "POST",
             headers: {
@@ -190,7 +174,7 @@ document.addEventListener("DOMContentLoaded", function () {
             showMessage("Could not load packages.", "error");
         });
     }
-
+    // display the packages in thr UI
     function displaySelectedPackage() {
         const selectedPackageID = packageSelect.value;
 
