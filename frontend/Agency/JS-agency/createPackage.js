@@ -1,6 +1,7 @@
-const API_URL = "http://localhost/COS-221-PA5/Travel-Agency-Package-Marketplace/backend/Agency_code/agencyAPI.php";
-
+const API_URL = "http://localhost/COS-221-PA5/Travel-Agency-Package-Marketplace/backend/Agency_code/agencyAPI.php";// api url
+// when the page loads
 document.addEventListener("DOMContentLoaded", function () {
+    // getting the form data
     const form = document.getElementById("createPackageForm");
     const messageBox = document.getElementById("messageBox");
 
@@ -15,7 +16,7 @@ document.addEventListener("DOMContentLoaded", function () {
     loadAccommodations();
     loadRestaurants();
     loadAttractions();
-
+    // submit button impoklemetation
     form.addEventListener("submit", function (event) {
         event.preventDefault();
 
@@ -28,7 +29,7 @@ document.addEventListener("DOMContentLoaded", function () {
             showMessage("You must be logged in to create a package.", "error");
             return;
         }
-
+        // get package data
         const packageData = {
             action: "create_package",
             agencyID: parseInt(agencyID),
@@ -45,7 +46,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const accommodationID = accommodationSelect.value;
         const restaurantID = restaurantSelect.value;
         const attractionValue = attractionSelect.value;
-
+        // some validation
         if (
             packageData.name === "" ||
             packageData.packageType === "" ||
@@ -73,7 +74,7 @@ document.addEventListener("DOMContentLoaded", function () {
             showMessage("Please select a valid destination.", "error");
             return;
         }
-
+        // API req to create the package
         fetch(API_URL, {
             method: "POST",
             headers: {
@@ -89,7 +90,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 showMessage(data.data || "Could not create package.", "error");
                 return;
             }
-
+            // making sure the extras are added if there are any
             const packageID = data.data.packageID;
             const extraRequests = [];
 
@@ -151,7 +152,7 @@ document.addEventListener("DOMContentLoaded", function () {
             showMessage("Something went wrong while creating the package.", "error");
         });
     });
-
+    // load for dropdowns
     function loadDestinations() {
         loadSelectOptions({
             selectElement: destinationSelect,
@@ -167,7 +168,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
-
+     // load for dropdowns
     function loadFlights() {
         loadSelectOptions({
             selectElement: flightSelect,
@@ -183,7 +184,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
-
+     // load for dropdowns
     function loadAccommodations() {
         loadSelectOptions({
             selectElement: accommodationSelect,
@@ -199,7 +200,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
-
+     // load for dropdowns
     function loadRestaurants() {
         loadSelectOptions({
             selectElement: restaurantSelect,
@@ -215,7 +216,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
-
+     // load for dropdowns
     function loadAttractions() {
         loadSelectOptions({
             selectElement: attractionSelect,
@@ -231,7 +232,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
-
+     // load for dropdowns
     function loadSelectOptions(config) {
         config.selectElement.innerHTML = "";
 
@@ -287,7 +288,7 @@ document.addEventListener("DOMContentLoaded", function () {
             showMessage(config.errorText + ".", "error");
         });
     }
-
+    // send the extra data to the API
     function sendExtraRequest(extraData) {
         return fetch(API_URL, {
             method: "POST",

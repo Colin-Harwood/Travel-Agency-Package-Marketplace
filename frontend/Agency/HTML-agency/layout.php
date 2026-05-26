@@ -32,7 +32,9 @@ function renderHeader($pageTitle = "Tripistry") {
 
             <?php if (isAgencyLoggedIn()) { ?>
                 <a href="createPackage.php" class="nav-tab">Create Package</a>
+                <a href="createGroupTrip.php" class="nav-tab">Create Group Package</a>
                 <a href="analyticsAgency.php" class="nav-tab">Analytics</a>
+                <a href="agencyPackages.php" class="nav-tab">My Packages</a>
                 <a href="logoutAgency.php" class="nav-tab">Logout</a>
             <?php } ?>
         </nav>

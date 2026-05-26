@@ -54,6 +54,7 @@ status ENUM('Active','Inactive','Draft') NOT NULL DEFAULT 'Draft'
 duration INT NOT NULL CHECK > 0 — number of days
 destinationID INT NOT NULL FK -> DESTINATION(destinationID)
 agencyID INT NOT NULL FK -> TRAVEL_AGENCY(userID)
+imageURL VARCHAR(500)
 
 FLIGHT
 flightID INT AUTO_INCREMENT PK

@@ -1,56 +1,112 @@
+### TO DO
+
+#getSingleBooking
+
 ### OVERVIEW
 
 EVERY SINGLE REQUEST NEEDS THE TRAVELLERS API KEY
 
+## Failure
+
+EVERY FAILURE HAS THE SAME RETURN FORMAT
+THE ONLY THING THAT CHANGES IS THE DATA
+
+{
+    "status": "error",
+    "data": "Invalid api key."
+}
+
 ## getAllPackages
+
+# NOTE
+    Everything can be left blank like in the original eg
+        {
+            "type": "getAllPackages",
+            "apikey": "nQkleaCMsoTSDR7YOQ7BIP60ektVKshSS8GFfcBuqf91K8/R"   
+        }
+
+    And this returns the first 10 with package id and set to descending as filters, and no other filtering
 
 # Query
 
+# This is the query where everything is removed/not specified 
+# So for the integers leave them as 0s to get everything
+# And for the strings leave them empty and this will give everything
+# sortDirection default is descending
+# sortBy default is package id and can take
+    -price
+    -duration
+    -name
+    -LEAVE BLANK: packageId
+# limit default is 10
+# page default is 1 AND PAGES START AT 1
+
+# Destination:
+    Sorts for country or city
+
+# Pagination
+    Includes some response data about the number of items returned and page
+
+
 {
     "type": "getAllPackages",
-    "apikey": "nQkleaCMsoTSDR7YOQ7BIP60ektVKshSS8GFfcBuqf91K8/R"
+    "apikey": "nQkleaCMsoTSDR7YOQ7BIP60ektVKshSS8GFfcBuqf91K8/R",
+    "agencyName": "",
+    "destination": "",
+    "maxPrice": 0,
+    "duration": 0,
+    "sortBy": "",
+    "sortDirection": "",
+    "page": 2,
+    "limit": 2
 }
 
 #Response
 
 {
     "status": "success",
-    "timestamp": 1779262851,
-    "data": [
-        {
-            "packageID": 1,
-            "name": "Paris Classic Getaway",
-            "type": "Cultural",
-            "description": "Explore Parisian art, cuisine and iconic landmarks over 7 days.",
-            "pricePerPerson": "15000.00",
-            "duration": 7,
-            "status": "Active",
-            "destinationCity": "Paris",
-            "destinationCountry": "France",
-            "agencyName": "Sunrise Travels",
-            "email": "info@sunrisetravels.com",
-            "phone": "+27115550001",
-            "street": "12 Sun Street",
-            "agencyCity": "Johannesburg"
-        },
-        {
-            "packageID": 3,
-            "name": "Tokyo City Explorer",
-            "type": "Adventure",
-            "description": "Discover the electric streets and culture of Tokyo in 8 days.",
-            "pricePerPerson": "18000.00",
-            "duration": 8,
-            "status": "Active",
-            "destinationCity": "Tokyo",
-            "destinationCountry": "Japan",
-            "agencyName": "Sunrise Travels",
-            "email": "info@sunrisetravels.com",
-            "phone": "+27115550001",
-            "street": "12 Sun Street",
-            "agencyCity": "Johannesburg"
-        },
-        ...
-    ]
+    "timestamp": 1779368755,
+    "data": {
+        "data": [
+            {
+                "packageID": 49,
+                "name": "Cairo and Luxor Combined",
+                "type": "Cultural",
+                "description": "Explore Cairo and journey south to the temples of Luxor.",
+                "pricePerPerson": "29000.00",
+                "duration": 12,
+                "status": "Active",
+                "destinationCity": "Cairo",
+                "destinationCountry": "Egypt",
+                "agencyName": "Sunrise Travels",
+                "email": "info@sunrisetravels.com",
+                "phone": "+27115550001",
+                "street": "12 Sun Street",
+                "agencyCity": "Johannesburg"
+            },
+            {
+                "packageID": 48,
+                "name": "Dubai Shopping Festival Tour",
+                "type": "City",
+                "description": "Timed with the Dubai Shopping Festival for the ultimate retail trip.",
+                "pricePerPerson": "21000.00",
+                "duration": 7,
+                "status": "Draft",
+                "destinationCity": "Dubai",
+                "destinationCountry": "UAE",
+                "agencyName": "Epic Voyages",
+                "email": "info@epicvoyages.com",
+                "phone": "+27115550003",
+                "street": "7 Adventure Road",
+                "agencyCity": "Pretoria"
+            }
+        ],
+        "pagination": {
+            "currentPage": 2,
+            "perPage": 2,
+            "count": 2
+        }
+    }
 }
 
 ## getPackage
@@ -185,4 +241,403 @@ ARRAYS:reviews, flights, accomodations, restaurants, accomodations, upcomingGrou
     "status": "success",
     "timestamp": 1779131903,
     "data": "Booking successfully cancelled and spots freed up"
+}
+
+## getBookings
+
+{
+    "type": "getBookings",
+    "apikey": "nQkleaCMsoTSDR7YOQ7BIP60ektVKshSS8GFfcBuqf91K8/R"
+}
+
+{
+    "status": "success",
+    "timestamp": 1779357935,
+    "data": [
+        {
+            "orderID": 2,
+            "startDate": "2026-09-06",
+            "numTravellers": 5,
+            "status": "Active",
+            "totalPrice": "140000.00",
+            "userID": 2,
+            "packageID": 2,
+            "type": "Cultural",
+            "name": "Paris Luxury Experience",
+            "description": "A premium 10-day immersion into the finest Paris has to offer.",
+            "pricePerPerson": "28000.00",
+            "duration": 10,
+            "destinationID": 1,
+            "agencyID": 12
+        },
+        {
+            "orderID": 12,
+            "startDate": "2026-11-02",
+            "numTravellers": 1,
+            "status": "Active",
+            "totalPrice": "24000.00",
+            "userID": 2,
+            "packageID": 12,
+            "type": "City",
+            "name": "Sydney and Blue Mountains",
+            "description": "Explore Sydney and venture into the iconic Blue Mountains.",
+            "pricePerPerson": "24000.00",
+            "duration": 10,
+            "destinationID": 6,
+            "agencyID": 13
+        },
+        ...
+    ]
+}
+
+## getSingleBooking
+
+SOMEONE CAN ONLY GET THEIR OWN BOOKINGS OTHERWISE AN ERROR WILL BE SENT
+
+# query
+
+{
+    "type": "getSingleBooking",
+    "apikey": "nQkleaCMsoTSDR7YOQ7BIP60ektVKshSS8GFfcBuqf91K8/R",
+    "orderID": 52
+}
+
+# response
+
+{
+    "status": "success",
+    "timestamp": 1779389099,
+    "data": {
+        "orderID": 52,
+        "startDate": "2026-08-10",
+        "numTravellers": 9,
+        "status": "Active",
+        "totalPrice": "144000.00",
+        "userID": 13,
+        "packageID": 10,
+        "type": "Wellness",
+        "name": "Epic Voyages",
+        "description": "Combine Thai spa treatments with cultural exploration over 7 days.",
+        "pricePerPerson": "16000.00",
+        "duration": 7,
+        "destinationID": 5,
+        "agencyID": 13,
+        "street": "7 Adventure Road",
+        "suburb": "Hatfield",
+        "city": "Pretoria",
+        "country": "South Africa"
+    }
+}
+
+
+## ALL BASIC GETS LIKE FLIGHT ACCOMMODATION etc
+
+## getAllFlights
+
+Data is an array of all the flights by id and each has an array of the associated packages
+
+Make the strings empty (ie "") for no param and make the prices 0 for no param
+All fields are needed
+
+# Query
+
+{
+    "type": "getAllFlights",
+    "apikey": "nQkleaCMsoTSDR7YOQ7BIP60ektVKshSS8GFfcBuqf91K8/R",
+    "startDate": "2026-10-04",
+    "endDate": "",
+    "airline": "Cathay",
+    "minPrice": 10000,
+    "maxPrice": 15000
+}
+
+#Response
+
+{
+    "status": "success",
+    "timestamp": 1779463447,
+    "data": [
+        {
+            "flightID": 48,
+            "airline": "Cathay Pacific",
+            "flightNumber": "CX234",
+            "departureAirport": "OR Tambo International",
+            "arrivalAirport": "Hong Kong International",
+            "departureTime": "2026-10-05 22:00:00",
+            "arrivalTime": "2026-10-06 14:00:00",
+            "price": "13800.00",
+            "packages": [
+                {
+                    "packageID": 23,
+                    "type": "City",
+                    "name": "Dubai Modern Marvel",
+                    "description": "Skyscrapers, luxury malls and desert safari in 6 days.",
+                    "pricePerPerson": "18000.00",
+                    "status": "Active",
+                    "duration": 6,
+                    "destinationID": 12,
+                    "agencyID": 11
+                },
+                {
+                    "packageID": 48,
+                    "type": "City",
+                    "name": "Dubai Shopping Festival Tour",
+                    "description": "Timed with the Dubai Shopping Festival for the ultimate retail trip.",
+                    "pricePerPerson": "21000.00",
+                    "status": "Draft",
+                    "duration": 7,
+                    "destinationID": 12,
+                    "agencyID": 13
+                }
+            ]
+        }
+    ]
+}
+
+## getAllAccommodations
+
+Any of the queries can be left empty same as above
+Destination can be city, country or id
+
+# Query
+
+{
+    "type": "getAllAccommodations",
+    "apikey": "nQkleaCMsoTSDR7YOQ7BIP60ektVKshSS8GFfcBuqf91K8/R",
+    "accommodationType": "Hotel",
+    "minRating": 4.0,
+    "minPrice": "1000",
+    "maxPrice": "10000",
+    "destination": "1"
+}
+
+# Response
+
+{
+    "status": "success",
+    "timestamp": 1779467840,
+    "data": [
+        {
+            "accommodationID": 1,
+            "name": "Hotel Le Marais",
+            "type": "Hotel",
+            "rating": "4.5",
+            "pricePerNight": "3500.00",
+            "city": "Paris",
+            "country": "France",
+            "packages": [
+                {
+                    "packageID": 41,
+                    "name": "Paris Off the Beaten Track",
+                    "type": "Cultural",
+                    "description": "Hidden gems, local markets and authentic Parisian neighbourhood life.",
+                    "pricePerPerson": "18000.00",
+                    "status": "Inactive",
+                    "duration": 8,
+                    "agencyID": 13
+                }
+            ]
+        }
+    ]
+}
+
+## getAllDestinations
+
+Now returns stats and all of the associated packages
+
+# Query
+
+{
+    "type": "getAllDestinations",
+    "apikey": "nQkleaCMsoTSDR7YOQ7BIP60ektVKshSS8GFfcBuqf91K8/R"
+}
+
+# Response
+
+{
+    "status": "success",
+    "timestamp": 1779479977,
+    "data": [
+        {
+            "destinationID": 1,
+            "country": "France",
+            "city": "Paris",
+            "description": "The city of light, famous for the Eiffel Tower and haute cuisine.",
+            "stats": {
+                "packageCount": 3,
+                "agencyCount": 3,
+                "bookingCount": 3,
+                "upcomingTrips": 3,
+                "reviewCount": 5,
+                "minPrice": "15000.00",
+                "maxPrice": "28000.00",
+                "avgPrice": "18200.00",
+                "avgRating": 4
+            },
+            "packages": [
+                {
+                    "packageID": 1,
+                    "name": "Paris Classic Getaway",
+                    "type": "Cultural",
+                    "description": "Explore Parisian art, cuisine and iconic landmarks over 7 days.",
+                    "pricePerPerson": "15000.00",
+                    "status": "Active",
+                    "duration": 7,
+                    "agencyID": 11
+                },
+                ...
+            ]
+        }
+        ...
+    ]
+}
+
+## getAllAttractions
+
+# Query
+
+{
+    "type": "getAllAttractions",
+    "apikey": "nQkleaCMsoTSDR7YOQ7BIP60ektVKshSS8GFfcBuqf91K8/R"
+}
+
+# Response
+
+{
+    "status": "success",
+    "timestamp": 1779477104,
+    "data": [
+        {
+            "name": "Eiffel Tower",
+            "entryFee": "26.00",
+            "description": "Iconic iron lattice tower on the Champ de Mars.",
+            "destinationID": 1,
+            "packages": [
+                {
+                    "packageID": 41,
+                    "name": "Paris Off the Beaten Track",
+                    "type": "Cultural",
+                    "description": "Hidden gems, local markets and authentic Parisian neighbourhood life.",
+                    "pricePerPerson": "18000.00",
+                    "status": "Inactive",
+                    "duration": 8,
+                    "agencyID": 13
+                }
+            ]
+        }
+        ...
+    ]
+}
+
+## getAllRestaurants
+
+# Query
+
+{
+    "type": "getAllRestaurants",
+    "apikey": "nQkleaCMsoTSDR7YOQ7BIP60ektVKshSS8GFfcBuqf91K8/R"
+}
+
+# Response
+
+{
+    "status": "success",
+    "timestamp": 1779475112,
+    "data": [
+        {
+            "restaurantID": 1,
+            "name": "Le Cinq",
+            "priceRange": "$$$$",
+            "cuisine": "French",
+            "destinationID": 1,
+            "packages": [
+                {
+                    "packageID": 1,
+                    "name": "Paris Classic Getaway",
+                    "type": "Cultural",
+                    "description": "Explore Parisian art, cuisine and iconic landmarks over 7 days.",
+                    "pricePerPerson": "15000.00",
+                    "status": "Active",
+                    "duration": 7,
+                    "agencyID": 11
+                },
+            ]
+        },
+        ...
+    ]
+}
+
+## makeReview
+
+Star rating is an integer 1-5
+Only the comment, starRating and the packageID are required 
+
+# Query
+
+{
+    "type": "makeReview",
+    "apikey": "nQkleaCMsoTSDR7YOQ7BIP60ektVKshSS8GFfcBuqf91K8/R",
+    "comment": "testMessage",
+    "starRating": 3,
+    "packageID": 1
+}
+
+# Response
+
+{
+    "status": "Success",
+    "timestamp": 1779385708,
+    "data": "Review created successfully"
+}
+
+## getAllReviews
+
+Gets all of the reviews that that user has made
+
+# query
+
+{
+    "type": "getAllReviews",
+    "apikey": "nQkleaCMsoTSDR7YOQ7BIP60ektVKshSS8GFfcBuqf91K8/R"
+}
+
+# response
+
+{
+    "status": "success",
+    "timestamp": 1779390564,
+    "data": [
+        {
+            "reviewID": 2,
+            "rating": 5,
+            "comment": "Great itinerary and excellent accommodation choices throughout the journey.",
+            "date": "2026-07-25",
+            "firstName": "Sarah",
+            "middleName": "B",
+            "lastName": "Johnson",
+            "packageID": 2,
+            "agencyID": 12
+        },
+        ...
+    ]
+}
+
+## deleteReview
+
+User can only delete their own reviews
+
+# query
+
+{
+    "type": "deleteReview",
+    "apikey": "nQkleaCMsoTSDR7YOQ7BIP60ektVKshSS8GFfcBuqf91K8/R",
+    "reviewID": "51"
+}
+
+# response
+
+{
+    "status": "success",
+    "timestamp": 1779481909,
+    "data": "Review deleted successfully"
 }
