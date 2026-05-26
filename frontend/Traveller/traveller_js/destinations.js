@@ -77,7 +77,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         return '' +
             '<article class="destination-card" data-destination-id="' + escapeHtml(dest.destinationID) + '">' +
-            '<div class="card-image-placeholder">' + escapeHtml(dest.city) + '</div>' +
             '<div class="card-content">' +
             '<h3 class="card-title">' + escapeHtml(dest.city) + '</h3>' +
             '<div class="card-location">' + escapeHtml(dest.country) + '</div>' +

@@ -25,7 +25,8 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
             <li id="nav-attrac"><a href="attractions.php" class="<?= $current_page == 'attractions' ? 'active' : '' ?>">ATTRACTIONS</a></li>
             <li id="nav-rest"><a href="restaurants.php" class="<?= $current_page == 'restaurants' ? 'active' : '' ?>">RESTAURANTS</a></li>
             <li id="nav-bookings"><a href="bookings.php" class="<?= $current_page == 'bookings' ? 'active' : '' ?>">BOOKINGS</a></li>
-            <li id="nav-about"><a href="about.html" class="<?= $current_page == 'about' ? 'active' : '' ?>">ABOUT US</a></li>
+            <li id="nav-prof"><a href="profile.php" class="<?= $current_page == 'profile' ? 'active' : '' ?>">USER PROFILE</a></li>
+            <li id="nav-about"><a href="about.php" class="<?= $current_page == 'about' ? 'active' : '' ?>">ABOUT US</a></li>
             <li id="nav-login"><a href="traveller_login.php" class="<?= $current_page == 'traveller_login' ? 'active' : '' ?>">LOGIN</a></li>
             <li id="nav-signup"><a href="traveller_signup.php" class="<?= $current_page == 'traveller_signup' ? 'active' : '' ?>">CREATE ACCOUNT</a></li>
             <li id="nav-logout"><a href="#" id="logoutLink">LOGOUT</a></li>

@@ -6,7 +6,7 @@ body {
   margin: 0;
 }
 
-.accommodations-wrapper {
+.restaurants-wrapper {
   max-width: 1400px;
   margin: 40px auto;
   padding: 0 40px;
@@ -48,7 +48,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  min-width: 140px;
+  min-width: 160px;
 }
 
 .filter-group label {
@@ -81,19 +81,34 @@ body {
   min-width: 200px;
 }
 
-.price-inputs {
+.price-range-buttons {
   display: flex;
-  align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
-.price-inputs input {
-  width: 100px;
+.price-btn {
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 30px;
+  padding: 8px 16px;
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #333;
 }
 
-.price-inputs span {
-  color: #888;
-  font-weight: bold;
+.price-btn:hover {
+  background: #e0e0e0;
+  border-color: #f80000;
+}
+
+.price-btn.active {
+  background: #f80000;
+  border-color: #f80000;
+  color: white;
 }
 
 .apply-filters-btn,
@@ -123,13 +138,13 @@ body {
   background: #111;
 }
 
-.accommodations-grid {
+.restaurants-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 25px;
 }
 
-.accommodation-card {
+.restaurant-card {
   border: 1px solid #e0e0e0;
   background-color: #ffffff;
   display: flex;
@@ -137,11 +152,10 @@ body {
   border-radius: 6px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
   transition: all 0.3s ease;
-  position: relative;
   overflow: hidden;
 }
 
-.accommodation-card:hover {
+.restaurant-card:hover {
   border-color: #cccccc;
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
   transform: translateY(-5px);
@@ -169,88 +183,89 @@ body {
 
 .card-title {
   font-family: "Rajdhani", sans-serif;
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: #111111;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   line-height: 1.3;
 }
 
 .card-location {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: #777777;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
-.card-location::before {
-  font-size: 0.75rem;
-}
-
-.card-type {
+.cuisine-tag {
   display: inline-block;
   background-color: #f0f0f0;
   padding: 4px 10px;
   border-radius: 20px;
   font-size: 0.7rem;
-  font-weight: bold;
   color: #555;
   margin-bottom: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-.rating-stars {
+.price-range-display {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   margin-bottom: 12px;
 }
 
-.stars {
-  color: #f5a900;
-  letter-spacing: 2px;
-  font-size: 0.9rem;
-}
-
-.rating-value {
-  font-size: 0.8rem;
-  color: #666;
-}
-
-.price-per-night {
-  margin-top: auto;
-  text-align: right;
-  padding-top: 12px;
-  border-top: 1px solid #eee;
-  margin-top: 12px;
-}
-
-.price-per-night .label {
-  font-size: 0.75rem;
+.price-range-display .price-range-label {
+  font-size: 0.7rem;
   color: #888;
   text-transform: uppercase;
 }
 
-.price-per-night .price {
+.price-range-display .price-value {
   font-family: "Rajdhani", sans-serif;
-  font-size: 1.5rem;
+  font-size: 1.1rem;
   font-weight: 700;
-  color: #f80000;
+}
+
+.price-value.price-1 {
+  color: #2e7d32;
+}
+.price-value.price-2 {
+  color: #ed6c02;
+}
+.price-value.price-3 {
+  color: #d32f2f;
+}
+.price-value.price-4 {
+  color: #9c27b0;
 }
 
 .package-count {
+  margin-top: auto;
   font-size: 0.7rem;
   color: #f80000;
-  margin-top: 8px;
-  text-align: right;
   cursor: pointer;
+  text-align: right;
+  padding-top: 12px;
+  border-top: 1px solid #eee;
+  margin-top: 12px;
+  font-weight: bold;
 }
 
 .package-count:hover {
   text-decoration: underline;
+}
+
+.package-count.no-packages {
+  color: #999;
+  cursor: default;
+}
+
+.package-count.no-packages:hover {
+  text-decoration: none;
 }
 
 .modal {
@@ -354,6 +369,11 @@ body {
   margin-left: 8px;
 }
 
+.package-status-inactive {
+  color: #999;
+  font-size: 0.7rem;
+}
+
 .package-details {
   display: flex;
   flex-wrap: wrap;
@@ -363,7 +383,7 @@ body {
   margin-top: 8px;
 }
 
-.accommodations-message {
+.restaurants-message {
   margin-bottom: 20px;
   padding: 12px 14px;
   border: 1px solid #e0e0e0;
@@ -373,17 +393,17 @@ body {
   display: none;
 }
 
-.accommodations-message:not(:empty) {
+.restaurants-message:not(:empty) {
   display: block;
 }
 
-.accommodations-message.error {
+.restaurants-message.error {
   border-color: #f80000;
   color: #990000;
   background-color: #fff0f0;
 }
 
-.accommodations-message.success {
+.restaurants-message.success {
   border-color: #2e7d32;
   color: #1b5e20;
   background-color: #e8f5e9;
@@ -432,7 +452,7 @@ body {
 }
 
 @media (max-width: 768px) {
-  .accommodations-wrapper {
+  .restaurants-wrapper {
     padding: 0 20px;
     margin: 20px auto;
   }
@@ -441,7 +461,7 @@ body {
     font-size: 1.8rem;
   }
 
-  .accommodations-grid {
+  .restaurants-grid {
     grid-template-columns: 1fr;
   }
 
@@ -449,5 +469,8 @@ body {
     width: 95%;
     margin: 15% auto;
   }
-}
 
+  .price-range-buttons {
+    justify-content: center;
+  }
+}

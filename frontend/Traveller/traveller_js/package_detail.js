@@ -95,7 +95,6 @@ document.addEventListener("DOMContentLoaded", function () {
         var r;
         reviews = safeArray(reviews);
         if (!reviews.length) return "<p>No reviews yet. Be the first to leave a review!</p>";
-
         for (i = 0; i < reviews.length; i++) {
             r = reviews[i];
             var deleteButton = "";
@@ -220,8 +219,15 @@ document.addEventListener("DOMContentLoaded", function () {
             street: pkg.street,
             city: pkg.agencyCity
         };
+        var imageHtml = '';
+        if (pkg.imageURL && pkg.imageURL !== "") {
+            imageHtml = '<div class="package-image-container"><img class="package-hero-image" src="' + escapeHtml(pkg.imageURL) + '" alt="' + escapeHtml(pkg.name || "Package image") + '" onerror="this.onerror=null; this.parentElement.innerHTML=\'<div class=\\\'package-image-placeholder\\\'>' + escapeHtml(pkg.name || "Package") + '</div>\'"></div>';
+        } else {
+            imageHtml = '<div class="package-image-placeholder">' + escapeHtml(pkg.name || "Package") + '</div>';
+        }
         return '' +
             '<div class="package-detail-card">' +
+            imageHtml +
             '<div class="package-header">' +
             '<h1>' + escapeHtml(pkg.name || "Package details") + '</h1>' +
             '<div class="package-meta">' +
@@ -302,7 +308,6 @@ document.addEventListener("DOMContentLoaded", function () {
             var button = deleteButtons[i];
             var newButton = button.cloneNode(true);
             button.parentNode.replaceChild(newButton, button);
-
             newButton.addEventListener("click", function (e) {
                 e.stopPropagation();
                 var reviewID = this.getAttribute("data-review-id");
@@ -310,7 +315,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     showMessage("Invalid review ID", true);
                     return;
                 }
-
                 if (confirm("Are you sure you want to delete this review? This action cannot be undone.")) {
                     showMessage("Deleting review...", false);
                     TravelAPI.deleteReview(reviewID, function (err, response) {
@@ -370,7 +374,6 @@ document.addEventListener("DOMContentLoaded", function () {
     function loadPackage() {
         clearMessage();
         container.innerHTML = '<div class="loading-state">Loading package details...</div>';
-
         loadCurrentUserReviews(function () {
             TravelAPI.getPackage(packageId, function (err, response) {
                 if (err) {

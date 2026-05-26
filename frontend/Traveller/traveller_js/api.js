@@ -11,10 +11,12 @@ var TravelAPI = (function () {
         return "/Travel-Agency-Package-Marketplace";
     }
 
+    //Builds the URL for the traveller-side API
     function getTravellerApiUrl() {
         return window.location.origin + getProjectRoot() + "/backend/traveller/userApi.php";
     }
 
+    // Defines the function for the login/register API URL.
     function getLoginApiUrl() {
         return window.location.origin + getProjectRoot() + "/backend/loginLogout/api.php";
     }
@@ -37,6 +39,7 @@ var TravelAPI = (function () {
         return fallback || "Request failed.";
     }
 
+    // XMLHttpRequest for POST requests.
     function sendRequest(url, payload, callback) {
         var xhr = new XMLHttpRequest();
         xhr.open("POST", url, true);
@@ -107,6 +110,7 @@ var TravelAPI = (function () {
         });
     }
 
+    // some backend/frondend might call the apikey differently
     function clearStoredApiKeys() {
         localStorage.removeItem("apiKey");
         localStorage.removeItem("apikey");
@@ -326,6 +330,21 @@ var TravelAPI = (function () {
         }, callback);
     }
 
+    function profileUpdate(email, password, callback) {
+        var apiKey = getApiKey();
+        if (!apiKey) {
+            callback(new Error("Please log in first."), null);
+            return;
+        }
+        
+        sendRequest(LOGIN_API_URL, {
+            type: "profileUpdate",
+            apiKey: apiKey,
+            email: email,
+            password: password
+        }, callback);
+    }
+
     return {
         travellerRegister: travellerRegister,
         travellerLogin: travellerLogin,
@@ -346,6 +365,7 @@ var TravelAPI = (function () {
         getAllDestinations: getAllDestinations,
         getAllRestaurants: getAllRestaurants,
         deleteReview: deleteReview,
-        getAllReviews: getAllReviews
+        getAllReviews: getAllReviews,
+        profileUpdate: profileUpdate
     };
 })();

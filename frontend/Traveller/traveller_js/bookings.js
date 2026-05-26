@@ -152,7 +152,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (!modal || !modalContent) return;
 
-        modalContent.innerHTML = '<div class="loading-details">Loading booking details...</div>';
         modal.style.display = "block";
 
         TravelAPI.getSingleBooking(orderId, function (err, response) {
@@ -253,7 +252,6 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        setMessage("Loading your bookings...", false);
         listContainer.innerHTML = '<div class="loading">Loading bookings...</div>';
 
         TravelAPI.getUserBookings(function (err, response) {

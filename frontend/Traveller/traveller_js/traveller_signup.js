@@ -30,6 +30,37 @@ document.addEventListener("DOMContentLoaded", function () {
         var phoneNumber = document.getElementById("phone").value.trim();
         var password = document.getElementById("password").value.trim();
 
+        var emailRegex = /^(?!\.)(?!.*\.\.)([a-z0-9_'+\-\.]*)[a-z0-9_'+\-]@([a-z0-9][a-z0-9\-]*\.)+[a-z]{2,}$/i;
+        if (!emailRegex.test(email)) {
+            errorMsg.textContent = "Email invalid try again";
+            return;
+        }
+        var phoneRegex = /^[0-9]{10}$/;
+        if (!phoneRegex.test(phone)) {
+            errorMsg.textContent = "Phone number invalid try again";
+            return;
+        }
+        if (password.length < 8) {
+            errorMsg.textContent = "Password too short must be >= 8";
+            return;
+        }
+        if (!/[A-Z]/.test(password)) {
+            errorMsg.textContent = "Password must have at least 1 uppercase letter";
+            return;
+        }
+        if (!/[a-z]/.test(password)) {
+            errorMsg.textContent = "Password must have at least 1 lowercase letter";
+            return;
+        }
+        if (!/[0-9]/.test(password)) {
+            errorMsg.textContent = "Password must have at least 1 digit";
+            return;
+        }
+        if (!/[!@#$%^&*(),.?":{}|<>_\-]/.test(password)) {
+            errorMsg.textContent = "Password must have at least 1 special character";
+            return;
+        }
+
         if (!firstName || !lastName || !email || !phoneNumber || !password) {
             errorMessage.textContent = "Please fill in all fields.";
             return;
