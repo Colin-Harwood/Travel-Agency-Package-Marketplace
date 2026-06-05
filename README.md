@@ -29,3 +29,31 @@ Travel agencies can create, manage and showcase their own travel packages. Agenc
 ## Project Purpose
 
 This project was developed as part of a practical assignment to design and implement a web based travel package marketplace. The main goal was to work with multiple data sources, design a relational database, build a server side API and create a frontend interface that can query and manipulate the database.
+
+## Running Locally
+
+Run this project through XAMPP/Apache, not by opening the PHP files directly.
+
+1. Put the project in your XAMPP `htdocs` folder, preferably:
+
+```text
+htdocs/COS-221-PA5/Travel-Agency-Package-Marketplace
+```
+
+2. Start Apache and MySQL.
+
+3. Import the database file:
+
+```text
+backend/tripistry_dataV7.sql
+```
+
+It creates the database `tripistry_data`.
+
+4. Open the site:
+
+```text
+http://localhost/COS-221-PA5/Travel-Agency-Package-Marketplace/frontend/IndexPage/index.php
+```
+
+Note: if the agency side cannot connect to MySQL, check `backend/Agency_code/config.php`. It currently uses port `3307`; change it to the default MySQL port if needed.
