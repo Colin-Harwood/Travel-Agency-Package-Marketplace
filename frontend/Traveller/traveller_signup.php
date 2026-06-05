@@ -4,9 +4,7 @@ include "header.php";
 <link rel="stylesheet" href="traveller_css/traveller_login.css">
 <div class="video-container">
     <video autoplay muted loop class="bg-video">
-        <source
-            src="/Travel-Agency-Package-Marketplace/frontend/Traveller/traveller_img/Beautiful Destinations in Greece with The Luxury Collection.mp4"
-            type="video/mp4">
+        <source src="traveller_img/Beautiful Destinations in Greece with The Luxury Collection.mp4" type="video/mp4">
     </video>
 </div>
 <main class="content-wrapper">
@@ -44,8 +42,8 @@ include "header.php";
         <p class="bottom-link">Already have an account? <a href="traveller_login.php">Login</a></p>
     </div>
 </main>
-<script src="/Travel-Agency-Package-Marketplace/frontend/Traveller/traveller_js/api.js"></script>
-<script src="/Travel-Agency-Package-Marketplace/frontend/Traveller/traveller_js/traveller_signup.js"></script>
+<script src="traveller_js/api.js"></script>
+<script src="traveller_js/traveller_signup.js"></script>
 </body>
 
 </html>

@@ -1,13 +1,13 @@
 <?php
 $current_page = basename($_SERVER['PHP_SELF']);
-include 'header.php';
 if (!isset($_GET['id'])) {
     header('Location: packages.php');
     exit;
 }
+$body_class = "package-view-page";
+include 'header.php';
 ?>
 <link rel="stylesheet" href="traveller_css/package_detail.css">
-<body class="package-view-page">
     <main class="detail-wrapper">
         <div class="top-bar">
             <a href="packages.php" class="button-back">&lt; BACK TO PACKAGES</a>

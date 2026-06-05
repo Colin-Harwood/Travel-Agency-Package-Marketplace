@@ -1,11 +1,11 @@
 <?php
 $current_page = basename($_SERVER['PHP_SELF']);
+$body_class = "bookings-page";
 include "header.php"
     ?>
 <link rel="stylesheet" href="traveller_css/packages.css">
 <link rel="stylesheet" href="traveller_css/bookings.css">
 
-<body class="bookings-page" data-page="bookings">
     <main class="packages-wrapper">
         <section class="hero-panel small-hero">
             <div>

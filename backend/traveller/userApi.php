@@ -36,7 +36,7 @@ class Database {
             $this->sendResponse("error", "Missing apikey field.", 400);
         }
 
-        $stmt = $this->conn->prepare("SELECT userID from user where apiKey = ? AND userType = 'Traveller'");
+        $stmt = $this->conn->prepare("SELECT userID FROM USER WHERE apiKey = ? AND userType = 'Traveller'");
         $stmt->bind_param("s", $request_data->apikey);
         $stmt->execute();
 
@@ -421,7 +421,7 @@ class Database {
             $this->sendResponse("error", "Missing required cancellation details", 400);
         }
 
-        $stmt = $this->conn->prepare("SELECT * from user where apiKey = ?");
+        $stmt = $this->conn->prepare("SELECT * FROM USER WHERE apiKey = ?");
         $stmt->bind_param("s", $data->apikey);
         $stmtFetch = $stmt->execute();
         $userRes = $stmt->get_result();
@@ -493,8 +493,8 @@ class Database {
 
         try {
             $sqlQueuery = "
-                SELECT * FROM `order` AS o
-                JOIN package AS p ON o.packageID = p.packageID
+                SELECT * FROM `ORDER` AS o
+                JOIN PACKAGE AS p ON o.packageID = p.packageID
                 WHERE o.userID = ? AND o.status <> 'Cancelled'
             ";
 
@@ -529,9 +529,9 @@ class Database {
             // o.orderID, o.startDate, o.numTravellers, o.status, o.totalPrice, o.packageID, p.type, p.name, p.description, p.pricePerPerson
             $sql = "
                 SELECT *
-                FROM `order` AS o
-                JOIN package AS p ON o.packageID = p.packageID
-                LEFT JOIN travel_agency AS a ON p.agencyID = a.userID
+                FROM `ORDER` AS o
+                JOIN PACKAGE AS p ON o.packageID = p.packageID
+                LEFT JOIN TRAVEL_AGENCY AS a ON p.agencyID = a.userID
                 WHERE o.orderID = ? AND o.userID = ?
             ";
 
@@ -568,9 +568,9 @@ class Database {
         try {
             $sql = "
                 SELECT * 
-                FROM flight AS f
-                LEFT JOIN package_flight AS pf ON f.flightID = pf.flightID
-                LEFT JOIN package as p ON p.packageID = pf.packageID
+                FROM FLIGHT AS f
+                LEFT JOIN PACKAGE_FLIGHT AS pf ON f.flightID = pf.flightID
+                LEFT JOIN PACKAGE AS p ON p.packageID = pf.packageID
                 WHERE 1=1
             ";
 
@@ -675,9 +675,9 @@ class Database {
                     p.packageID, p.name AS packageName, p.type AS packageType, 
                     p.description AS packageDescription, p.pricePerPerson, 
                     p.status AS packageStatus, p.duration, p.agencyID
-                FROM restaurant AS r
-                LEFT JOIN package_restaurant AS pr ON r.restaurantID = pr.restaurantID
-                LEFT JOIN package AS p ON pr.packageID = p.packageID
+                FROM RESTAURANT AS r
+                LEFT JOIN PACKAGE_RESTAURANT AS pr ON r.restaurantID = pr.restaurantID
+                LEFT JOIN PACKAGE AS p ON pr.packageID = p.packageID
             ";
 
             $stmt = $this->conn->prepare($sql);
@@ -741,8 +741,8 @@ class Database {
                     stats.maxPrice, stats.avgPrice, stats.bookingCount, 
                     stats.upcomingTrips, stats.reviewCount, stats.avgRating
                     
-                FROM destination AS d
-                LEFT JOIN package AS p ON d.destinationID = p.destinationID
+                FROM DESTINATION AS d
+                LEFT JOIN PACKAGE AS p ON d.destinationID = p.destinationID
                 
                 -- subquery to aggreagate the stats
                 LEFT JOIN (
@@ -761,9 +761,9 @@ class Database {
                         -- reviews
                         COUNT(DISTINCT r.reviewID) AS reviewCount,
                         AVG(r.starRating) AS avgRating
-                    FROM package p2
-                    LEFT JOIN `order` o ON p2.packageID = o.orderID
-                    LEFT JOIN review r ON p2.packageID = r.packageID
+                    FROM PACKAGE p2
+                    LEFT JOIN `ORDER` o ON p2.packageID = o.orderID
+                    LEFT JOIN REVIEW r ON p2.packageID = r.packageID
                     GROUP BY p2.destinationID
                 ) AS stats ON d.destinationID = stats.destinationID
             ";
@@ -844,10 +844,10 @@ class Database {
                     p.description AS packageDescription, p.pricePerPerson, 
                     p.status AS packageStatus, p.duration, p.agencyID,
                     d.city, d.country
-                FROM accommodation AS a
-                LEFT JOIN package_accommodation AS pr ON a.accommodationID = pr.accommodationID
-                LEFT JOIN package AS p ON pr.packageID = p.packageID
-                LEFT JOIN destination AS d ON p.destinationID = d.destinationID
+                FROM ACCOMMODATION AS a
+                LEFT JOIN PACKAGE_ACCOMMODATION AS pr ON a.accommodationID = pr.accommodationID
+                LEFT JOIN PACKAGE AS p ON pr.packageID = p.packageID
+                LEFT JOIN DESTINATION AS d ON p.destinationID = d.destinationID
                 WHERE 1=1
             ";
 
@@ -960,10 +960,10 @@ class Database {
                     p.packageID, p.name AS packageName, p.type AS packageType, 
                     p.description AS packageDescription, p.pricePerPerson, 
                     p.status AS packageStatus, p.duration, p.agencyID
-                FROM attraction AS a
-                LEFT JOIN package_attraction AS pa 
+                FROM ATTRACTION AS a
+                LEFT JOIN PACKAGE_ATTRACTION AS pa 
                     ON a.destinationID = pa.destinationID AND a.name = pa.name
-                LEFT JOIN package AS p 
+                LEFT JOIN PACKAGE AS p 
                     ON pa.packageID = p.packageID
             ";
 
@@ -1017,8 +1017,8 @@ class Database {
         try {
             $sql = "
                 SELECT reviewID, starRating AS rating, comment, reviewDate AS date, firstName, middleName, lastName, packageID, agencyID
-                FROM review AS r
-                JOIN user AS u ON r.userID = u.userID
+                FROM REVIEW AS r
+                JOIN USER AS u ON r.userID = u.userID
                 WHERE u.apiKey = ?
             ";
 
@@ -1061,7 +1061,7 @@ class Database {
             //getting the agencyID
             $sqlAgencyID = "
                 SELECT agencyID
-                FROM package
+                FROM PACKAGE
                 WHERE packageID = ?
             ";
 
@@ -1084,7 +1084,7 @@ class Database {
 
             //use sqls curdate as its easier
             $insertSql = "
-                INSERT INTO review (comment, starRating, reviewDate, userID, packageID, agencyID)
+                INSERT INTO REVIEW (comment, starRating, reviewDate, userID, packageID, agencyID)
                 VALUES (?, ?, CURDATE(), ?, ?, ?)
             ";
 
@@ -1110,7 +1110,7 @@ class Database {
             $userID = $this->getUserID($data);
             // wow 1111
             // check valid given info
-            $stmt = $this->conn->prepare("SELECT userID FROM review WHERE reviewID = ? AND userID = ?");
+            $stmt = $this->conn->prepare("SELECT userID FROM REVIEW WHERE reviewID = ? AND userID = ?");
             $stmt->bind_param("ii", $data->reviewID, $userID);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -1120,7 +1120,7 @@ class Database {
             }
 
             $sql = "
-                DELETE FROM review WHERE reviewID = ?  AND userID = ?
+                DELETE FROM REVIEW WHERE reviewID = ?  AND userID = ?
             ";
 
             $stmt = $this->conn->prepare($sql);
@@ -1136,7 +1136,7 @@ class Database {
     }
 
     private function getUserID($data) {
-        $stmt = $this->conn->prepare("SELECT userID from user where apiKey = ?");
+        $stmt = $this->conn->prepare("SELECT userID FROM USER WHERE apiKey = ?");
         $stmt->bind_param("s", $data->apikey);
         $stmt->execute();
 

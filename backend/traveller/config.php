@@ -1,10 +1,7 @@
 <?php
 
 $envFile = __DIR__ . '/env.php';
-if (!file_exists($envFile)) {
-    die("Environment file is missing. Please create env.php");
-}
-$env = require $envFile;
+$env = file_exists($envFile) ? require $envFile : [];
 // 1 for dev, set 0 for prod
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -17,7 +14,7 @@ define('BASE_URL', 'localhost');
 $db_host = 'localhost';
 $db_name = 'tripistry_data';
 $db_user = 'root'; 
-$db_pass = $env['DB_PASS'];
+$db_pass = $env['DB_PASS'] ?? '';
 
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 

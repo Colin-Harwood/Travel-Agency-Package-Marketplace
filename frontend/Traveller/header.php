@@ -1,5 +1,6 @@
 <?php
 $current_page = basename($_SERVER['PHP_SELF'], '.php');
+$body_class = isset($body_class) ? trim($body_class) : "";
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -12,7 +13,7 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
     <link rel="stylesheet" href="traveller_css/navbar.css">
     <script src="traveller_js/api.js"></script>
 </head>
-<body>
+<body<?= $body_class !== "" ? ' class="' . htmlspecialchars($body_class, ENT_QUOTES, 'UTF-8') . '"' : '' ?>>
     <nav class="navbar">
         <a href="#" id="nav-pic" class="nav-brand">
             <img src="traveller_img/logo.png" alt="Tripistry Logo" class="nav-logo-img">
@@ -33,5 +34,3 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
         </ul>
     </nav>
     <script src="traveller_js/nav.js"></script>
-</body>
-</html>
